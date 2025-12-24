@@ -15,7 +15,6 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var topAppBar: MaterialToolbar
     private lateinit var bottomNav: BottomNavigationView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,16 +62,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
-        topAppBar = findViewById(R.id.topAppBar)
-//        topAppBar.setOnMenuItemClickListener { menuItem ->
-//            when (menuItem.itemId) {
-//                R.id.action_cart -> {
-//                    // Open Cart Activity
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
     }
 }
