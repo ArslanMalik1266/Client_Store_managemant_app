@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvCartTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Cart"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/inter_bold"
+        android:layout_marginBottom="12dp" />
+
+
+ 
+        <LinearLayout
+            android:id="@+id/layoutCartItems"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:background="@color/off_white"
+            android:orientation="vertical">
+
+
+            <TextView
+                android:id="@+id/tvEmptyCart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Your cart is empty"
+                android:gravity="center"
+                android:visibility="gone"
+                android:textSize="14sp"
+                android:alpha="0.8"
+                android:textColor="@color/black"
+                android:padding="16dp"
+                android:fontFamily="@font/inter_regular"/>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_cart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+
+        </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/tvTotalAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total RM: 0.00"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:fontFamily="@font/inter_bold"
+        android:layout_marginTop="16dp" />
+
+    <!-- Proceed Button -->
+    <Button
+        android:id="@+id/btnProceed"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Proceed"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/black"
+        android:layout_marginTop="12dp" />
+
+    <!-- Clear Cart -->
+    <Button
+        android:id="@+id/btnClearCart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear Cart"
+        android:textColor="@color/black"
+        android:backgroundTint="@android:color/transparent"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>

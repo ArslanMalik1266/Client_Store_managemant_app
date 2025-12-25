@@ -9,6 +9,12 @@
         <item name="android:textSize">20sp</item>
         <item name="fontFamily">@font/inter_bold</item>
     </style>
+    <style name="CustomChip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipStrokeColor">@color/green</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
 
     <style name="Theme.Base44" parent="Base.Theme.Base44" />
 </resources>

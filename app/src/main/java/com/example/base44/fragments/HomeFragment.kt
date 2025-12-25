@@ -7,15 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.base44.BottomSheetCart
 import com.example.base44.R
 import com.example.base44.adaptor.ProductAdapter
 import com.example.base44.dataClass.Product
+import com.google.android.material.appbar.MaterialToolbar
 
 
 class HomeFragment : Fragment() {
 
     private lateinit var rvProducts: RecyclerView
     private lateinit var productAdapter: ProductAdapter
+    private lateinit var topAppBar: MaterialToolbar
     private val productList = mutableListOf<Product>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +31,8 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
        val view = inflater.inflate(R.layout.fragment_home, container, false)
+
+        topAppBar = view.findViewById<MaterialToolbar>(R.id.topAppBar)
 
         rvProducts = view.findViewById(R.id.rvProducts)
 
@@ -50,6 +55,14 @@ class HomeFragment : Fragment() {
         // RecyclerView set karo
         rvProducts.layoutManager = GridLayoutManager(requireContext(), 2)
         rvProducts.adapter = productAdapter
+
+        topAppBar.setOnMenuItemClickListener { item ->
+            if (item.itemId == R.id.action_cart) {
+                val bottomSheet = BottomSheetCart()
+                bottomSheet.show(parentFragmentManager, "CartBottomSheet")
+                true
+            } else false
+        }
 
         return view
     }
