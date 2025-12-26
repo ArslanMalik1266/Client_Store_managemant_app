@@ -5,13 +5,21 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.BottomSheetCart
+import com.example.base44.MyBottomSheet
 import com.example.base44.R
 import com.example.base44.adaptor.ProductAdapter
 import com.example.base44.dataClass.Product
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationView
 
 
 class HomeFragment : Fragment() {
@@ -19,6 +27,8 @@ class HomeFragment : Fragment() {
     private lateinit var rvProducts: RecyclerView
     private lateinit var productAdapter: ProductAdapter
     private lateinit var topAppBar: MaterialToolbar
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var bottomNavigationView: BottomNavigationView
     private val productList = mutableListOf<Product>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,11 +40,22 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-       val view = inflater.inflate(R.layout.fragment_home, container, false)
+        val view = inflater.inflate(R.layout.fragment_home, container, false)
+
+        val navView = view.findViewById<NavigationView>(R.id.nav_view)
+
 
         topAppBar = view.findViewById<MaterialToolbar>(R.id.topAppBar)
-
+        drawerLayout = view.findViewById<DrawerLayout>(R.id.drawerLayout)
         rvProducts = view.findViewById(R.id.rvProducts)
+        bottomNavigationView =
+            requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
+
+
+        topAppBar.setNavigationOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
 
         productList.add(Product("Wh-1001", "Kuda", R.drawable.headphones_image))
         productList.add(Product("SW-2045", "Todo", R.drawable.watch_image))
@@ -48,11 +69,10 @@ class HomeFragment : Fragment() {
 
 
         productAdapter = ProductAdapter(productList) { product ->
-            // Yeh lambda tab chalega jab Add ya checkbox click hoga
-            // Yahan aap cart me item add karne ka code dal sakte ho
+            val bottomSheet = MyBottomSheet(product.title)
+            bottomSheet.show(parentFragmentManager, "MyBottomSheet")
         }
 
-        // RecyclerView set karo
         rvProducts.layoutManager = GridLayoutManager(requireContext(), 2)
         rvProducts.adapter = productAdapter
 
@@ -62,6 +82,46 @@ class HomeFragment : Fragment() {
                 bottomSheet.show(parentFragmentManager, "CartBottomSheet")
                 true
             } else false
+        }
+
+
+        navView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.navHome -> {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, HomeFragment())
+                        .commit()
+                    bottomNavigationView.selectedItemId = R.id.nav_home
+                    true
+                }
+                R.id.navOrders -> {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, ordersFragment())
+                        .commit()
+                    bottomNavigationView.selectedItemId = R.id.nav_orders
+                    true
+                }
+
+                R.id.navResult -> {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, resultFragment())
+                        .commit()
+                    bottomNavigationView.selectedItemId = R.id.nav_result
+                    true
+                }
+
+                R.id.navWallet -> {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, walletFragment())
+                        .commit()
+                    bottomNavigationView.selectedItemId = R.id.nav_wallet
+                    true
+
+                }
+
+                else -> false
+
+            }
         }
 
         return view
