@@ -3,6 +3,9 @@
     <style name="Base.Theme.Base44" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:statusBarColor">@color/green</item>
+        <item name="android:navigationBarColor">@color/white</item>
+
     </style>
 
     <style name="Toolbar.Title.Bold" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
@@ -14,6 +17,9 @@
         <item name="chipStrokeColor">@color/green</item>
         <item name="android:textColor">@color/black</item>
     </style>
+
+
+
 
 
     <style name="Theme.Base44" parent="Base.Theme.Base44" />

@@ -6,570 +6,227 @@
     android:layout_height="wrap_content"
     android:background="@color/white"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="16dp">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/cart"
-            app:tint="@color/green" />
-
-        <TextView
-            android:id="@+id/tvItemHeading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:fontFamily="@font/inter_bold"
-            android:text="Add to Cart"
-            android:layout_marginStart="8dp"
-            android:textColor="@color/black"
-            android:textSize="20sp" />
-
-
-    </LinearLayout>
-
-
-    <TextView
-        android:id="@+id/tvPasteSlip"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_medium"
-        android:layout_marginTop="16dp"
-        android:text="Paste betting slip (optional)"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/etPasteSlip"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:background="@android:drawable/edit_text"
-            android:fontFamily="@font/inter_regular"
-            android:hint="Paste here"
-            android:padding="8dp" />
-
-        <Button
-            android:id="@+id/btnProcess"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:backgroundTint="@color/white"
-            android:fontFamily="@font/inter_medium"
-            android:text="Process"
-            android:textColor="@color/black" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvRaceDay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/inter_medium"
-        android:text="Select Race Day(s):"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
-
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <CheckBox
+            <!-- Top Row: Icon + Heading -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/cart"
+                    app:tint="@color/green" />
+
+                <TextView
+                    android:id="@+id/tvItemHeading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginBottom="12dp"
+                    android:text="Add to Cart"
+                    android:textColor="@color/black"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/inter_bold" />
+            </LinearLayout>
+
+            <!-- Paste Slip -->
+            <TextView
+                android:id="@+id/tvPasteSlip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:padding="4dp"
-                android:text="Mon" />
+                android:layout_marginTop="16dp"
+                android:text="Paste betting slip (optional)"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:fontFamily="@font/inter_medium" />
 
-            <CheckBox
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etPasteSlip"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/edit_text"
+                    android:hint="Paste here"
+                    android:padding="8dp"
+                    android:fontFamily="@font/inter_regular" />
+
+                <Button
+                    android:id="@+id/btnProcess"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/off_white"
+                    android:text="Process"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/inter_medium" />
+            </LinearLayout>
+
+            <!-- Race Days -->
+            <TextView
+                android:id="@+id/tvRaceDay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:padding="4dp"
-                android:text="Tue" />
+                android:layout_marginTop="16dp"
+                android:text="Select Race Day(s):"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:fontFamily="@font/inter_medium" />
 
-            <CheckBox
-                android:layout_width="wrap_content"
+            <HorizontalScrollView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:padding="4dp"
-                android:text="Wed" />
+                android:scrollbars="none">
 
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:padding="4dp"
-                android:text="Thu" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
 
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:padding="4dp"
-                android:text="Fri" />
+                    <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="4dp" android:text="Mon" android:fontFamily="@font/inter_regular"/>
+                    <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="4dp" android:text="Tue" android:fontFamily="@font/inter_regular"/>
+                    <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="4dp" android:text="Wed" android:fontFamily="@font/inter_regular"/>
+                    <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="4dp" android:text="Thu" android:fontFamily="@font/inter_regular"/>
+                    <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="4dp" android:text="Fri" android:fontFamily="@font/inter_regular"/>
+                    <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="4dp" android:text="Sat" android:fontFamily="@font/inter_regular"/>
+                    <CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="4dp" android:text="Sun" android:fontFamily="@font/inter_regular"/>
+                </LinearLayout>
+            </HorizontalScrollView>
 
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:padding="4dp"
-                android:text="Sat" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="8dp"
+                android:background="#E0E0E0" />
 
-            <CheckBox
-                android:layout_width="wrap_content"
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/nestedScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:fillViewport="true"
+                android:scrollbars="vertical">
+            <HorizontalScrollView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:padding="4dp"
-                android:text="Sun" />
+                android:scrollbars="none">
+
+                <TableLayout
+                    android:id="@+id/tableLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:stretchColumns="*">
+
+                    <TableRow
+                        android:background="@color/off_white"
+                        android:padding="4dp">
+
+                        <TextView android:text="NUMBER" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingHorizontal="4dp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                        <TextView android:text="AMOUNT" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingHorizontal="4dp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                        <TextView android:text="B" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                        <TextView android:text="S" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                        <TextView android:text="A" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                        <TextView android:text="IB" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                        <TextView android:text="BX" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                        <TextView android:text="BXA" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                        <TextView android:text="BXS" android:gravity="center" android:textColor="@color/black" android:textSize="12sp" android:paddingVertical="2dp" android:fontFamily="@font/inter_bold"/>
+                    </TableRow>
+
+                    <View android:layout_height="8dp" />
+                </TableLayout>
+            </HorizontalScrollView>
+
+            </androidx.core.widget.NestedScrollView>
+
+            <!-- Add Row Button -->
+            <Button
+                android:id="@+id/btnAddRow"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white"
+                android:drawableLeft="@drawable/add"
+                android:drawableTint="@color/black"
+                android:text="Add more rows"
+                android:textColor="@color/black" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="8dp"
+                android:background="#E0E0E0" />
+
+            <!-- Total -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total:"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/inter_bold" />
+
+                <TextView
+                    android:id="@+id/tvTotalAmount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:text="RM 25.00"
+                    android:textColor="@color/green"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/inter_bold" />
+            </LinearLayout>
+
+            <!-- Bottom Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/white"
+                    android:text="Cancel"
+                    android:textColor="@color/black" />
+
+                <Button
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/blue"
+                    android:text="Add to Cart"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
         </LinearLayout>
-    </HorizontalScrollView>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginVertical="8dp"
-        android:background="#E0E0E0" />
-
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none">
-
-        <TableLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="2dp"
-            android:stretchColumns="*">
-
-            <TableRow
-                android:background="@color/off_white"
-                android:padding="4dp">
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp"
-                    android:text="NUMBER"
-                    android:textColor="@color/black"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:paddingHorizontal="4dp"
-                    android:text="AMOUNT"
-                    android:textColor="@color/black"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:text="B"
-                    android:textColor="@color/blue"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:text="S"
-                    android:textColor="@color/blue"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:text="A"
-                    android:textColor="@color/blue"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:text="IB"
-                    android:textColor="@color/blue"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:text="BX"
-                    android:textColor="@color/blue"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:text="BXA"
-                    android:textColor="@color/blue"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:fontFamily="@font/inter_bold"
-                    android:gravity="center"
-                    android:text="BXS"
-                    android:textColor="@color/blue"
-                    android:textSize="12sp" />
-
-            </TableRow>
-
-
-            <View android:layout_height="8dp" />
-            <!-- Row 1 -->
-            <TableRow
-                android:layout_marginBottom="8dp"
-                android:gravity="center_vertical">
-
-                <EditText
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="35dp"
-                    android:background="@drawable/bg_date_field"
-                    android:gravity="center"
-                    android:hint="No"
-                    android:padding="4dp"
-                    android:textSize="11sp" />
-
-
-                <Spinner
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:background="@drawable/bg_date_field" />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-            </TableRow>
-            <!-- Row 2 -->
-            <TableRow
-                android:layout_marginBottom="8dp"
-                android:gravity="center_vertical">
-
-                <EditText
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="35dp"
-                    android:background="@drawable/bg_date_field"
-                    android:gravity="center"
-                    android:hint="No"
-                    android:padding="4dp"
-                    android:textSize="11sp" />
-
-                <Spinner
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-
-                    android:background="@drawable/bg_date_field" />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-
-            </TableRow>
-            <!-- Row 3 -->
-            <TableRow
-                android:layout_marginBottom="8dp"
-                android:gravity="center_vertical">
-
-                <EditText
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_date_field"
-                    android:gravity="center"
-                    android:layout_height="35dp"
-                    android:hint="No"
-                    android:padding="4dp"
-                    android:textSize="11sp" />
-
-                <Spinner
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:background="@drawable/bg_date_field" />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-
-            </TableRow>
-            <!-- Row 4 -->
-            <TableRow
-                android:layout_marginBottom="8dp"
-                android:gravity="center_vertical">
-
-                <EditText
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_date_field"
-                    android:gravity="center"
-                    android:layout_height="35dp"
-                    android:hint="No"
-                    android:padding="4dp"
-                    android:textSize="11sp" />
-
-                <Spinner
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:background="@drawable/bg_date_field" />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    />
-
-
-            </TableRow>
-        </TableLayout>
-    </HorizontalScrollView>
-
-    <Button
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:backgroundTint="@color/white"
-        android:drawableLeft="@drawable/add"
-        android:drawableTint="@color/black"
-        android:text="Add more rows"
-        android:textColor="@color/black" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginVertical="8dp"
-        android:background="#E0E0E0" />
-
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/tvTotal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/inter_bold"
-            android:text="Total:"
-            android:textColor="@color/black"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/tvTotalAmount"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="@font/inter_bold"
-            android:gravity="end"
-            android:text="RM 25.00"
-            android:textColor="@color/green"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <!-- Buttons -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btnCancel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/white"
-            android:text="Cancel"
-            android:textColor="@color/black" />
-
-        <Button
-            android:id="@+id/btnAddToCart"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/blue"
-            android:text="Add to Cart"
-            android:textColor="@color/white" />
-    </LinearLayout>
-
 </LinearLayout>
-
