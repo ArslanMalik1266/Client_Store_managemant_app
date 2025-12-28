@@ -3,6 +3,7 @@ package com.example.base44
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -15,8 +16,14 @@ import com.example.base44.fragments.walletFragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
+
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     private lateinit var drawerLayout: DrawerLayout
     internal lateinit var toolbar: MaterialToolbar
@@ -31,6 +38,29 @@ class MainActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.topAppBar)
         bottomNav = findViewById(R.id.bottomNavigation)
         navView = findViewById(R.id.nav_view)
+
+        val headerView = navView.getHeaderView(0)  // header layout ka view
+        val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
+
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+        val currentUser = auth.currentUser
+        currentUser?.uid?.let { uid ->
+            db.collection("users").document(uid).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val username = document.getString("username")
+                        tvDrawerUsername.text = username ?: "User"
+                    }
+                }
+                .addOnFailureListener {
+                    tvDrawerUsername.text = "User"
+                }
+
+        }
+
+
+
 
         bottomNav.itemActiveIndicatorColor = ColorStateList.valueOf(
             ContextCompat.getColor(this, R.color.light_green)

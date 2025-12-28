@@ -13,10 +13,17 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:elevation="10dp"
+        app:menu="@menu/check_results_menu"
         app:navigationIcon="@drawable/back_arrow"
         app:title="My Orders"
         app:titleCentered="true"
         app:titleTextAppearance="@style/Toolbar.Title.Bold" />
+
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,9 +32,264 @@
         android:layout_marginTop="?actionBarSize"
         android:gravity="center">
 
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/off_white"
+            android:padding="8dp"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            android:scrollbars="horizontal"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipToday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Today"
+                android:textSize="10sp"
+                android:checkable="true"
+                android:textColor="@color/chip_text_selector"
+                app:checkedIconVisible="false"
+                app:chipBackgroundColor="@color/chip_bg_color"
+                app:chipStrokeColor="@color/strokeGrey" />
+
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipYesterday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Yesterday"
+                android:textSize="10sp"
+                android:checkable="true"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_bg_color"
+                app:chipStrokeColor="@color/strokeGrey" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipThisWeek"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="This Week"
+                android:textSize="10sp"
+                android:checkable="true"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_bg_color"
+                app:chipStrokeColor="@color/strokeGrey" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="All"
+                android:textSize="10sp"
+                android:checkable="true"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_bg_color"
+                app:chipStrokeColor="@color/strokeGrey" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipWinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Winners Only"
+                android:textSize="10sp"
+                android:checkable="true"
+                android:textColor="@color/chip_text_selector_golden"
+                app:chipBackgroundColor="@color/chip_bg_color_winner"
+                app:chipStrokeColor="@color/golden" />
+
+
+        </com.google.android.material.chip.ChipGroup>
+
+        </HorizontalScrollView>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/baseline_attach_money_24"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvTotalSales"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Sales"
+                            android:fontFamily="@font/inter_medium"
+                            android:textSize="14sp"
+                            android:textColor="@color/black"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalSalesAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RM 0.00"
+                            android:textSize="20sp"
+                            android:fontFamily="@font/inter_bold"
+                            android:textColor="@color/green"
+                            app:layout_constraintTop_toBottomOf="@id/tvTotalSales"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginTop="6dp"/>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Orders Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/lists"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvOrders"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Orders"
+                            android:textSize="14sp"
+                            android:textColor="@color/black"
+                            android:fontFamily="@font/inter_medium"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"/>
+
+                        <TextView
+                            android:id="@+id/tvOrdersCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textSize="20sp"
+                            android:fontFamily="@font/inter_bold"
+                            android:textColor="@color/black"
+                            app:layout_constraintTop_toBottomOf="@id/tvOrders"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginTop="6dp"/>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/trophy"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="@color/golden" />
+
+
+                    <TextView
+                        android:id="@+id/tvTotalWinnings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Winnings"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/inter_medium"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"/>
+
+                    <TextView
+                        android:id="@+id/tvWinningAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="RM 0.00"
+                        android:textSize="22sp"
+                        android:fontFamily="@font/inter_bold"
+                        android:textColor="@color/golden"
+                        app:layout_constraintTop_toBottomOf="@id/tvTotalWinnings"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginTop="6dp"/>
+
+                    <TextView
+                        android:id="@+id/tvWinningStats"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Winning Orders = 4 | Total Check Orders = 12"
+                        android:textSize="10sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/inter_regular"
+                        app:layout_constraintTop_toBottomOf="@id/tvWinningAmount"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginTop="8dp"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
+            android:nestedScrollingEnabled="false"
             android:layout_height="match_parent"/>
 
         <TextView
@@ -36,6 +298,8 @@
             android:alpha="0.7"
             android:fontFamily="@font/inter_medium"
             android:text="No orders yet"
+            android:gravity="center"
+            android:visibility="gone"
             android:textColor="@color/black"
             android:textSize="16sp" />
 
@@ -47,7 +311,10 @@
             android:text="Your orders will appear here"
             android:textColor="@color/black"
             android:textSize="16sp"
+            android:visibility="gone"
             android:layout_marginTop="8dp"/>
 
     </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

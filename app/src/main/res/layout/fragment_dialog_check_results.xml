@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_bg"
+    android:elevation="8dp"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+
+    <ImageView
+        android:id="@+id/trophy_img"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:src="@drawable/trophy"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/golden" />
+
+    <TextView
+        android:id="@+id/tvDialogTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/inter_bold"
+        android:text="Check Winning Numbers"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/trophy_img"
+        app:layout_constraintStart_toEndOf="@id/trophy_img"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvDialogsubTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:alpha="0.5"
+        android:fontFamily="@font/inter_regular"
+        android:text="Checking all orders for winning numbers"
+        android:textColor="@color/black"
+        android:textSize="10sp"
+        app:layout_constraintStart_toStartOf="@id/trophy_img"
+        app:layout_constraintTop_toBottomOf="@id/trophy_img" />
+
+    <ImageView
+        android:id="@+id/trophy_img_cntre"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="80dp"
+        android:src="@drawable/trophy"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvDialogsubTitle"
+        app:tint="@color/golden" />
+
+
+    <TextView
+        android:id="@+id/tvDialogMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/inter_regular"
+        android:gravity="center"
+        android:text="Check if your numbers are winners!"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/trophy_img_cntre"
+        app:layout_constraintStart_toStartOf="@+id/trophy_img_cntre"
+        app:layout_constraintTop_toBottomOf="@+id/trophy_img_cntre" />
+
+    <Button
+        android:id="@+id/btnDialogueCheckWinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="60dp"
+        android:backgroundTint="@color/golden"
+        android:fontFamily="@font/inter_medium"
+        android:text="Check Results"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/tvDialogMessage"
+        app:layout_constraintStart_toStartOf="@+id/tvDialogMessage"
+        app:layout_constraintTop_toBottomOf="@+id/tvDialogMessage" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

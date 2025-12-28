@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "106190127236",
+    "project_id": "golden-sparrow-83579",
+    "storage_bucket": "golden-sparrow-83579.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:106190127236:android:a0e889f622eb244f21c2d1",
+        "android_client_info": {
+          "package_name": "com.example.base44"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkQJapQFBQZJFVjuzMpOKsWlaw0GTwc6M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

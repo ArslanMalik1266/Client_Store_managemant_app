@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_check_results"
+        android:icon="@drawable/trophy_resized"
+        android:title="@null"
+        android:iconTint="@color/golden"
+        app:showAsAction="always" />
+</menu>

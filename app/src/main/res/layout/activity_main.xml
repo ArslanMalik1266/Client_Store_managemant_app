@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            app:title="Base44"
+            app:title="Golden Sparrow"
             app:titleTextAppearance="@style/Toolbar.Title.Bold"
             app:titleCentered="true"
             app:menu="@menu/top_appbar_menu"

@@ -1,5 +1,6 @@
 package com.example.base44.fragments
 
+import CheckResultsDialogFragment
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -42,8 +43,22 @@ class ordersFragment : Fragment() {
                 .replace(R.id.fragment_container, HomeFragment())
                 .commit()
 
+
             val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
             bottomNav.selectedItemId = R.id.nav_home
+        }
+
+        toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_check_results -> {
+                    val dialog = CheckResultsDialogFragment()
+                    dialog.show(parentFragmentManager, "check_results_dialog")
+                    true
+                }
+
+                else -> false
+            }
+
         }
 
 
