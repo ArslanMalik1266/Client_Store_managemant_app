@@ -2,7 +2,6 @@ import android.app.Dialog
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.DialogFragment
 import com.example.base44.R
 
