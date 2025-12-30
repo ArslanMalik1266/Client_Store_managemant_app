@@ -30,13 +30,12 @@
 
             <Button
                 android:id="@+id/btnAddToCartTop"
-                android:layout_width="wrap_content"
+                android:layout_width="160dp"
                 android:layout_height="wrap_content"
                 android:text="Add to Cart"
-                android:layout_gravity="end|center_vertical"
+                android:layout_gravity="start|center_vertical"
                 android:backgroundTint="@color/green"
                 android:textColor="@android:color/white"
-                android:visibility="gone"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="6dp"
                 android:fontFamily="@font/inter_semibold"/>

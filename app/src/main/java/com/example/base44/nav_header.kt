@@ -10,15 +10,18 @@ import com.google.firebase.firestore.FirebaseFirestore
 class nav_header : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
-    private lateinit var username_tv : TextView
+    private lateinit var username_tv: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.nav_header)
 
+        initView()
+    }
+
+    private fun initView() {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
         username_tv = findViewById(R.id.tvUsername)
-
     }
 }

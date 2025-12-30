@@ -14,7 +14,8 @@ import com.google.android.material.checkbox.MaterialCheckBox
 
 class ProductAdapter(
     private val products: List<Product>,
-    private val onAddToCartClicked: (product: Product) -> Unit
+    private val onAddToCartClicked: (product: Product) -> Unit,
+    private val onSelectionChanged: (List<Product>) -> Unit
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     inner class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -42,6 +43,9 @@ class ProductAdapter(
         // When checkbox clicked
         holder.cbAddToCart.setOnCheckedChangeListener { _, isChecked ->
             product.isAddedToCart = isChecked
+            val selectedProducts = products.filter { it.isAddedToCart }
+            onSelectionChanged(selectedProducts)
+
         }
 
         // When Add button clicked

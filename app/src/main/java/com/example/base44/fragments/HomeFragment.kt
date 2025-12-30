@@ -19,10 +19,10 @@ class HomeFragment : Fragment() {
     private lateinit var productAdapter: ProductAdapter
     private val productList = mutableListOf<Product>()
 
+
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).toolbar.visibility = View.VISIBLE
-        (activity as MainActivity).enableDrawer(true)
+        showToolbarAndDrawer()
     }
 
     override fun onCreateView(
@@ -32,12 +32,19 @@ class HomeFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        // 🔥 Drawer + Toolbar ENABLE (HOME ONLY)
-        (requireActivity() as MainActivity).enableDrawer(true)
+        initRecyclerView(view)
+        loadProducts()
+        setupAdapter()
 
+        return view
+    }
+
+    private fun initRecyclerView(view: View) {
         rvProducts = view.findViewById(R.id.rvProducts)
+        rvProducts.layoutManager = GridLayoutManager(requireContext(), 2)
+    }
 
-        // ✅ FULL PRODUCT LIST (AS IT WAS)
+    private fun loadProducts() {
         productList.clear()
         productList.add(Product("Wh-1001", "Kuda", R.drawable.headphones_image))
         productList.add(Product("SW-2045", "Todo", R.drawable.watch_image))
@@ -48,15 +55,31 @@ class HomeFragment : Fragment() {
         productList.add(Product("PS-7019", "Dragon", R.drawable.speaker_image))
         productList.add(Product("SG-8027", "Lotto", R.drawable.glasses_image))
         productList.add(Product("FT-9041", "9Lotto", R.drawable.watch_image_2))
-
-        productAdapter = ProductAdapter(productList) { product ->
-            MyBottomSheet(product.title)
-                .show(parentFragmentManager, "MyBottomSheet")
-        }
-
-        rvProducts.layoutManager = GridLayoutManager(requireContext(), 2)
-        rvProducts.adapter = productAdapter
-
-        return view
     }
+    private fun setupAdapter() {
+        productAdapter = ProductAdapter(
+            products = productList,
+
+            onAddToCartClicked = { product ->
+                MyBottomSheet(product.title)
+                    .show(parentFragmentManager, "MyBottomSheet")
+            },
+
+            onSelectionChanged = { selectedProducts ->
+                val activity = requireActivity() as MainActivity
+                activity.updateSelectedItems(selectedProducts)
+            }
+        )
+
+        rvProducts.adapter = productAdapter
+    }
+
+
+    private fun showToolbarAndDrawer() {
+        val activity = activity as MainActivity
+        activity.toolbar.visibility = View.VISIBLE
+        activity.enableDrawer(true)
+    }
+
+
 }

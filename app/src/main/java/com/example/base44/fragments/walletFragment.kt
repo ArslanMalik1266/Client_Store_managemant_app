@@ -14,29 +14,33 @@ import com.example.base44.adaptor.SimpleOrdersAdapter
 import com.example.base44.dataClass.SimpleOrderItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-
 class walletFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).toolbar.visibility = View.GONE
-        (activity as MainActivity).enableDrawer(false)
+        hideToolbarAndDrawer()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-       val view = inflater.inflate(R.layout.fragment_wallet, container, false)
+        val view = inflater.inflate(R.layout.fragment_wallet, container, false)
+        setupToolbar(view)
+        setupRecyclerView(view)
+        return view
+    }
 
+
+    private fun hideToolbarAndDrawer() {
+        val activity = activity as MainActivity
+        activity.toolbar.visibility = View.GONE
+        activity.enableDrawer(false)
+    }
+
+    private fun setupToolbar(view: View) {
         val toolbar: Toolbar = view.findViewById(R.id.topAppBar)
         toolbar.setNavigationIcon(R.drawable.back_arrow)
         toolbar.setNavigationOnClickListener {
@@ -47,61 +51,27 @@ class walletFragment : Fragment() {
             val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
             bottomNav.selectedItemId = R.id.nav_home
         }
-
-
-        recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
-
-        val simpleOrders = mutableListOf<SimpleOrderItem>()
-        simpleOrders.add(
-            SimpleOrderItem(
-                invoiceNumber = "INV 1766568425043",
-                dateAdded = "24 Dec 2025, 12:00 AM",
-                totalAmount = "RM 24.00",
-                status = "Completed"
-            )
-        )
-        simpleOrders.add(
-            SimpleOrderItem(
-                invoiceNumber = "INV 1766568425043",
-                dateAdded = "24 Dec 2025, 12:00 AM",
-                totalAmount = "RM 24.00",
-                status = "Completed"
-            )
-        )
-        simpleOrders.add(
-            SimpleOrderItem(
-                invoiceNumber = "INV 1766568425043",
-                dateAdded = "24 Dec 2025, 12:00 AM",
-                totalAmount = "RM 24.00",
-                status = "Completed"
-            )
-        )
-        simpleOrders.add(
-            SimpleOrderItem(
-                invoiceNumber = "INV 1766568425043",
-                dateAdded = "24 Dec 2025, 12:00 AM",
-                totalAmount = "RM 24.00",
-                status = "Completed"
-            )
-        )
-        simpleOrders.add(
-            SimpleOrderItem(
-                invoiceNumber = "INV 1766568425043",
-                dateAdded = "24 Dec 2025, 12:00 AM",
-                totalAmount = "RM 24.00",
-                status = "Completed"
-            )
-        )
-        val adapter = SimpleOrdersAdapter(simpleOrders) { position ->
-            // Handle click if needed
-        }
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(context)
-
-
-
-        return view
     }
 
+    private fun setupRecyclerView(view: View) {
+        recyclerView = view.findViewById(R.id.recyclerView)
 
+        val simpleOrders = mutableListOf<SimpleOrderItem>().apply {
+            repeat(15) {
+                add(
+                    SimpleOrderItem(
+                        invoiceNumber = "INV 1766568425043",
+                        dateAdded = "24 Dec 2025, 12:00 AM",
+                        totalAmount = "RM 24.00",
+                        status = "Completed"
+                    )
+                )
+            }
+        }
+
+        val adapter = SimpleOrdersAdapter(simpleOrders) { position ->
+        }
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = adapter
+    }
 }

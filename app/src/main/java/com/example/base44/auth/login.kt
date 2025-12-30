@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.base44.MainActivity
 import com.example.base44.R
+import com.example.base44.admin.admin_Dashboard
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -85,6 +86,14 @@ class login : AppCompatActivity() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        if (email == "admin123@admin.com") {
+                            val intent = Intent(this, admin_Dashboard::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                            Toast.makeText(this, "Admin login successful", Toast.LENGTH_SHORT).show()
+                            finish()
+                            return@addOnCompleteListener
+                        }
                         val intent = Intent(this, MainActivity::class.java)
                         intent.flags =
                             Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -99,38 +108,4 @@ class login : AppCompatActivity() {
 
     }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//
-//        if(requestCode == RC_SIGN_IN) {
-//            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-//            try {
-//                val account = task.getResult(ApiException::class.java)!!
-//
-//                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-//                auth.signInWithCredential(credential)
-//                    .addOnCompleteListener { authTask ->
-//                        if (authTask.isSuccessful) {
-//                            val intent = Intent(this, MainActivity::class.java)
-//                            intent.flags =
-//                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//                            startActivity(intent)
-//                            finish()
-//                        } else {
-//                            Toast.makeText(
-//                                this,
-//                                "Login failed: ${authTask.exception?.message}",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
-//                    }
-//
-//            } catch (e: ApiException) {
-//                Toast.makeText(this, "Google sign-in failed: ${e.message}", Toast.LENGTH_SHORT)
-//                    .show()
-//            }
-//        }
-
-
- //   }
 }

@@ -12,24 +12,28 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class resultFragment : Fragment() {
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).toolbar.visibility = View.GONE
-        (activity as MainActivity).enableDrawer(false)
+        hideToolbarAndDrawer()
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-       val view = inflater.inflate(R.layout.fragment_result, container, false)
+        val view = inflater.inflate(R.layout.fragment_result, container, false)
+        setupToolbar(view)
+        return view
+    }
 
+
+    private fun hideToolbarAndDrawer() {
+        val activity = activity as MainActivity
+        activity.toolbar.visibility = View.GONE
+        activity.enableDrawer(false)
+    }
+
+    private fun setupToolbar(view: View) {
         val toolbar: Toolbar = view.findViewById(R.id.topAppBar)
         toolbar.setNavigationIcon(R.drawable.back_arrow)
         toolbar.setNavigationOnClickListener {
@@ -40,9 +44,5 @@ class resultFragment : Fragment() {
             val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
             bottomNav.selectedItemId = R.id.nav_home
         }
-
-        return view
     }
-
-
 }

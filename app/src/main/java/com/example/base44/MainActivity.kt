@@ -12,6 +12,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.example.base44.auth.login
+import com.example.base44.dataClass.Product
 import com.example.base44.fragments.HomeFragment
 import com.example.base44.fragments.ordersFragment
 import com.example.base44.fragments.resultFragment
@@ -26,7 +27,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
-
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
 
@@ -39,36 +39,40 @@ class MainActivity : AppCompatActivity() {
     private val selectedItems = mutableListOf<String>()
     private lateinit var btnAddToCartTop: Button
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        initViews()
+        setupGoogleSignIn()
+        setupToolbar()
+        setupBottomNav()
+        setupNavView()
+        setupTopCartButton()
+        logoutAccount()
 
+        if (savedInstanceState == null) {
+            loadFragment(HomeFragment())
+        }
+    }
+
+
+    private fun initViews() {
         drawerLayout = findViewById(R.id.drawerLayout)
         toolbar = findViewById(R.id.topAppBar)
         bottomNav = findViewById(R.id.bottomNavigation)
         navView = findViewById(R.id.nav_view)
         logoutBtn = findViewById(R.id.btnLogout)
-
         btnAddToCartTop = findViewById(R.id.btnAddToCartTop)
         btnAddToCartTop.visibility = View.GONE
 
-
-        btnAddToCartTop.setOnClickListener {
-            // Open BottomSheet for selected items
-            val itemsString = selectedItems.joinToString(", ")
-            val bottomSheet = MyBottomSheet(itemsString)
-            bottomSheet.show(supportFragmentManager, "AddToCartBottomSheet")
-        }
-
-        val headerView = navView.getHeaderView(0)  // header layout ka view
-        val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
-
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
-        val currentUser = auth.currentUser
 
+        val headerView = navView.getHeaderView(0)
+        val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
+
+        val currentUser = auth.currentUser
         currentUser?.uid?.let { uid ->
             db.collection("users").document(uid).get()
                 .addOnSuccessListener { document ->
@@ -80,10 +84,10 @@ class MainActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     tvDrawerUsername.text = "User"
                 }
-
         }
+    }
 
-
+    private fun setupGoogleSignIn() {
         val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
             com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
         )
@@ -91,61 +95,41 @@ class MainActivity : AppCompatActivity() {
             .requestEmail()
             .build()
 
-        googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(this, gso)
+        googleSignInClient =
+            com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(this, gso)
+    }
 
-
-
-        bottomNav.itemActiveIndicatorColor = ColorStateList.valueOf(
-            ContextCompat.getColor(this, R.color.light_green)
-        )
-
-
+    private fun setupToolbar() {
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_cart) {
-                BottomSheetCart()
-                    .show(supportFragmentManager, "CartBottomSheet")
+                BottomSheetCart().show(supportFragmentManager, "CartBottomSheet")
                 true
-            } else {
-                false
-            }
+            } else false
         }
-
 
         toolbar.setNavigationOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
+    }
 
-        if (savedInstanceState == null) {
-            loadFragment(HomeFragment())
-//            bottomNav.selectedItemId = R.id.nav_home
-        }
+    private fun setupBottomNav() {
+        bottomNav.itemActiveIndicatorColor = ColorStateList.valueOf(
+            ContextCompat.getColor(this, R.color.light_green)
+        )
 
         bottomNav.setOnItemSelectedListener {
             when (it.itemId) {
-                R.id.nav_home -> {
-                    loadFragment(HomeFragment())
-                    true
-                }
-
-                R.id.nav_orders -> {
-                    loadFragment(ordersFragment())
-                    true
-                }
-
-                R.id.nav_result -> {
-                    loadFragment(resultFragment())
-                    true
-                }
-
-                R.id.nav_wallet -> {
-                    loadFragment(walletFragment())
-                    true
-                }
-
-                else -> false
+                R.id.nav_home -> loadFragment(HomeFragment())
+                R.id.nav_orders -> loadFragment(ordersFragment())
+                R.id.nav_result -> loadFragment(resultFragment())
+                R.id.nav_wallet -> loadFragment(walletFragment())
+                else -> return@setOnItemSelectedListener false
             }
+            true
         }
+    }
 
+    private fun setupNavView() {
         navView.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.navHome -> bottomNav.selectedItemId = R.id.mainPage
@@ -156,7 +140,14 @@ class MainActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
-        logoutAccount()
+    }
+
+    private fun setupTopCartButton() {
+        btnAddToCartTop.setOnClickListener {
+            val itemsString = selectedItems.joinToString(", ")
+            val bottomSheet = MyBottomSheet(itemsString)
+            bottomSheet.show(supportFragmentManager, "AddToCartBottomSheet")
+        }
     }
 
     private fun loadFragment(fragment: Fragment) {
@@ -165,19 +156,25 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
+    fun showTopAddToCartButton(show: Boolean) {
+        if (show) {
+            toolbar.title = ""
+            btnAddToCartTop.visibility = View.VISIBLE
+        } else {
+            toolbar.title = "Golden Sparrow"
+            btnAddToCartTop.visibility = View.GONE
+        }
+    }
+
     fun enableDrawer(enable: Boolean) {
         drawerLayout.setDrawerLockMode(
-            if (enable)
-                DrawerLayout.LOCK_MODE_UNLOCKED
-            else
-                DrawerLayout.LOCK_MODE_LOCKED_CLOSED
+            if (enable) DrawerLayout.LOCK_MODE_UNLOCKED
+            else DrawerLayout.LOCK_MODE_LOCKED_CLOSED
         )
-
     }
 
     private fun logoutAccount() {
         logoutBtn.setOnClickListener {
-
             MaterialAlertDialogBuilder(this)
                 .setTitle("Logout")
                 .setMessage("Are you sure you want to logout?")
@@ -185,21 +182,26 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("Yes") { _, _ ->
                     auth.signOut()
                     googleSignInClient.signOut()
-
                     val intent = Intent(this, login::class.java)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
-
                     finish()
                 }
-
-                .setNegativeButton("No") { dialog, _ ->
-                    dialog.dismiss()
-                }
-
+                .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
                 .show()
         }
     }
 
+    fun updateSelectedItems(selectedProducts: List<Product>) {
+        selectedItems.clear()
+        selectedProducts.forEach { selectedItems.add(it.title) }
+
+        if (selectedItems.isNotEmpty()) {
+            toolbar.title = ""
+            btnAddToCartTop.visibility = View.VISIBLE
+        } else {
+            toolbar.title = "Golden Sparrow"
+            btnAddToCartTop.visibility = View.GONE
+        }
+    }
 }

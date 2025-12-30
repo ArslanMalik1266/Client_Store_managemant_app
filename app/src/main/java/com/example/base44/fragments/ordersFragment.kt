@@ -15,34 +15,44 @@ import com.example.base44.adaptor.OrdersAdapter
 import com.example.base44.dataClass.OrderItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-
 class ordersFragment : Fragment() {
+
     private lateinit var recyclerView: RecyclerView
+    private val orders = mutableListOf<OrderItem>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).toolbar.visibility = View.GONE
-        (activity as MainActivity).enableDrawer(false)
+        hideToolbarAndDrawer()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_orders, container, false)
 
+        setupToolbar(view)
+        initRecyclerView(view)
+        loadOrders()
+        setupAdapter()
+
+        return view
+    }
+
+
+    private fun hideToolbarAndDrawer() {
+        val activity = activity as MainActivity
+        activity.toolbar.visibility = View.GONE
+        activity.enableDrawer(false)
+    }
+
+    private fun setupToolbar(view: View) {
         val toolbar: Toolbar = view.findViewById(R.id.topAppBar)
         toolbar.setNavigationIcon(R.drawable.back_arrow)
         toolbar.setNavigationOnClickListener {
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, HomeFragment())
                 .commit()
-
 
             val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
             bottomNav.selectedItemId = R.id.nav_home
@@ -55,65 +65,38 @@ class ordersFragment : Fragment() {
                     dialog.show(parentFragmentManager, "check_results_dialog")
                     true
                 }
-
                 else -> false
             }
-
         }
-
-
-        recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
-        val orders = mutableListOf<OrderItem>()
-        orders.add(
-            OrderItem(
-                invoiceNumber = "INV 1766568425043",
-                status = "Completed",
-                dateAdded = "24 Dec 2025, 12:00 AM",
-                raceDay = "Wed",
-                productImage = R.drawable.watch_image,
-                productName = "Toto",
-                productCode = "SW-2045",
-                hashtag = "#7866",
-                rmAmount = "RM 2.00",
-                totalAmount = "RM 24.00"
-            )
-        )
-        orders.add(
-            OrderItem(
-                invoiceNumber = "INV 1766568425043",
-                status = "Completed",
-                dateAdded = "24 Dec 2025, 12:00 AM",
-                raceDay = "Wed",
-                productImage = R.drawable.watch_image,
-                productName = "Toto",
-                productCode = "SW-2045",
-                hashtag = "#7866",
-                rmAmount = "RM 2.00",
-                totalAmount = "RM 24.00"
-            )
-        )
-        orders.add(
-            OrderItem(
-                invoiceNumber = "INV 1766568425043",
-                status = "Completed",
-                dateAdded = "24 Dec 2025, 12:00 AM",
-                raceDay = "Wed",
-                productImage = R.drawable.watch_image,
-                productName = "Toto",
-                productCode = "SW-2045",
-                hashtag = "#7866",
-                rmAmount = "RM 2.00",
-                totalAmount = "RM 24.00"
-            )
-        )
-
-        recyclerView.layoutManager = LinearLayoutManager(context)
-
-        val adapter = OrdersAdapter(orders)
-        recyclerView.adapter = adapter
-
-        return view
-
     }
 
+    private fun initRecyclerView(view: View) {
+        recyclerView = view.findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+    }
+
+    private fun loadOrders() {
+        orders.clear()
+        repeat(20) {
+            orders.add(
+                OrderItem(
+                    invoiceNumber = "INV 1766568425043",
+                    status = "Completed",
+                    dateAdded = "24 Dec 2025, 12:00 AM",
+                    raceDay = "Wed",
+                    productImage = R.drawable.watch_image,
+                    productName = "Toto",
+                    productCode = "SW-2045",
+                    hashtag = "#7866",
+                    rmAmount = "RM 2.00",
+                    totalAmount = "RM 24.00"
+                )
+            )
+        }
+    }
+
+    private fun setupAdapter() {
+        val adapter = OrdersAdapter(orders)
+        recyclerView.adapter = adapter
+    }
 }
