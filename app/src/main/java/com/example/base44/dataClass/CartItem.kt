@@ -1,5 +1,6 @@
 package com.example.base44.dataClass
 
+import java.io.Serializable
 
 data class CartItem(
     val imageRes: Int,
@@ -9,4 +10,4 @@ data class CartItem(
     val dateAdded: String,
     val hashtagCode: String,
     val rmCode: String
-)
+) : Serializable
