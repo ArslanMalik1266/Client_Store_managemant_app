@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 class BottomSheetCart : BottomSheetDialogFragment() {
 
     private lateinit var recyclerView: RecyclerView
+    private lateinit var rv_tags: RecyclerView
     private lateinit var adapter: CartAdapter
     private lateinit var totalText: TextView
     private lateinit var btnProceed: Button
@@ -43,6 +44,7 @@ class BottomSheetCart : BottomSheetDialogFragment() {
         totalText = view.findViewById(R.id.tvTotalAmount)
         btnProceed = view.findViewById(R.id.btnProceed)
         btnClear = view.findViewById(R.id.btnClearCart)
+        rv_tags =view.findViewById(R.id.recyclerview_cartsizes)
     }
 
     private fun setupRecyclerView() {
