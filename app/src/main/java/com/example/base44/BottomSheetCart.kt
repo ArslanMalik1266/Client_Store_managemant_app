@@ -1,5 +1,6 @@
 package com.example.base44
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,20 +10,25 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.adaptor.CartAdapter
-import com.example.base44.dataClass.CartItem
+import com.example.base44.adaptor.utils.generateFinalInvoice
+import com.example.base44.dataClass.CartManager
+import com.example.base44.dataClass.OrderItem
+import com.example.base44.dataClass.OrdersManager
+import com.example.base44.dataClass.add_to_cart_item
+import com.example.base44.fragments.ordersFragment
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-
-class BottomSheetCart : BottomSheetDialogFragment() {
+class BottomSheetCart(private val cartItems: List<add_to_cart_item>) : BottomSheetDialogFragment() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var rv_tags: RecyclerView
-    private lateinit var adapter: CartAdapter
-    private lateinit var totalText: TextView
-    private lateinit var btnProceed: Button
     private lateinit var btnClear: Button
+    private lateinit var btnProceed: Button
+    private lateinit var totalText: TextView
 
-    private val cartItems = mutableListOf<CartItem>()
+    private lateinit var adapter: CartAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,82 +36,99 @@ class BottomSheetCart : BottomSheetDialogFragment() {
     ): View? {
         val view = inflater.inflate(R.layout.bottom_sheet_cart, container, false)
 
-        initViews(view)
+        recyclerView = view.findViewById(R.id.recyclerView_cart)
+        btnClear = view.findViewById(R.id.btnClearCart)
+        btnProceed = view.findViewById(R.id.btnProceed)
+        totalText = view.findViewById(R.id.tvTotalAmount)
+
         setupRecyclerView()
         setupButtons()
+        updateTotal()
+        btnClear()
+        btnProceed()
+
 
         return view
     }
 
-    // ------------------- PRIVATE HELPERS -------------------
+    private fun btnProceed() {
+        btnProceed.setOnClickListener {
 
-    private fun initViews(view: View) {
-        recyclerView = view.findViewById(R.id.recyclerView_cart)
-        totalText = view.findViewById(R.id.tvTotalAmount)
-        btnProceed = view.findViewById(R.id.btnProceed)
-        btnClear = view.findViewById(R.id.btnClearCart)
-        rv_tags =view.findViewById(R.id.recyclerview_cartsizes)
+            if (cartItems.isEmpty()) return@setOnClickListener
+
+            val finalInvoice = generateFinalInvoice()
+            val orderItems = CartManager.cartItems.map { cart ->
+                OrderItem(
+                    invoiceNumber = finalInvoice,
+                    status = "Completed",
+                    dateAdded = SimpleDateFormat(
+                        "dd MMM yyyy, hh:mm a",
+                        Locale.getDefault()
+                    ).format(Date()),
+
+                    raceDay = cart.raceDays.lastOrNull() ?: SimpleDateFormat(
+                        "EEE",
+                        Locale.getDefault()
+                    ).format(
+                        Date()
+                    ),
+                    rows = cart.rows,
+                    productImage = cart.imageRes,
+                    productName = cart.productName,
+                    productCode = cart.productCode,
+                    hashtag = "#${System.currentTimeMillis().toString().takeLast(4)}",
+                    rmAmount = "RM 2.00",
+                    totalAmount = "RM 24.00"
+
+                )
+            }
+
+            OrdersManager.addOrders(orderItems)
+            CartManager.clearCart()
+
+            dismiss()
+
+            val bottomNav =
+                requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                    R.id.bottomNavigation
+                )
+            bottomNav.selectedItemId = R.id.nav_orders
+        }
     }
+
 
     private fun setupRecyclerView() {
-        recyclerView.layoutManager = LinearLayoutManager(context)
-
-        populateSampleCartItems()
-
-        adapter = CartAdapter(cartItems) { position ->
-            removeItem(position)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        adapter = CartAdapter(cartItems) { posiiton ->
+            CartManager.removeItem(posiiton)
+            adapter.notifyItemRemoved(posiiton)
         }
-
         recyclerView.adapter = adapter
-//        updateTotal()
-    }
-
-    private fun populateSampleCartItems() {
-        repeat(15) {
-            cartItems.add(
-                CartItem(
-                    R.drawable.headphones_image,
-                    "Kuda",
-                    "WH-1001",
-                    "INV No: 25/12/T001",
-                    "Thu 25/12/2025",
-                    "#9706",
-                    "RM 1.00"
-                )
-            )
-        }
     }
 
     private fun setupButtons() {
         btnClear.setOnClickListener {
-            clearCart()
+            val emptyList = cartItems.map { it.copy(rows = mutableListOf()) }
+            adapter.updateData(emptyList)
+            updateTotal()
         }
 
         btnProceed.setOnClickListener {
-            proceedToCheckout()
+            // TODO: Checkout logic
         }
     }
 
-    private fun removeItem(position: Int) {
-        cartItems.removeAt(position)
-        adapter.notifyItemRemoved(position)
-//        updateTotal()
+    private fun btnClear() {
+        btnClear.setOnClickListener {
+            CartManager.clearCart()
+            adapter.notifyDataSetChanged()
+        }
     }
 
-    private fun clearCart() {
-        cartItems.clear()
-        adapter.notifyDataSetChanged()
-//        updateTotal()
+    private fun updateTotal() {
+        val total = cartItems.sumOf { item ->
+            item.rows.sumOf { row -> row.amount.toDoubleOrNull() ?: 0.0 }
+        }
+        totalText.text = "Total RM: %.2f".format(total)
     }
-
-    private fun proceedToCheckout() {
-        // TODO: Handle checkout logic here
-    }
-
-//    private fun updateTotal() {
-//        val total = cartItems.sumOf {
-//            it.amount.replace("RM", "").trim().toDouble()
-//        }
-//        totalText.text = "Total RM: %.2f".format(total)
-//    }
 }

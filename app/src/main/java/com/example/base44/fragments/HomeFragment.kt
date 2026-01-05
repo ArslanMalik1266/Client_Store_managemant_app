@@ -61,10 +61,9 @@ class HomeFragment : Fragment() {
             products = productList,
 
             onAddToCartClicked = { product ->
-                MyBottomSheet(product.title)
+                MyBottomSheet(listOf(product))
                     .show(parentFragmentManager, "MyBottomSheet")
             },
-
             onSelectionChanged = { selectedProducts ->
                 val activity = requireActivity() as MainActivity
                 activity.updateSelectedItems(selectedProducts)

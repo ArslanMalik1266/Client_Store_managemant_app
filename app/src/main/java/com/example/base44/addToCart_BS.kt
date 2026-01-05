@@ -7,16 +7,33 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.widget.NestedScrollView
+import androidx.recyclerview.widget.RecyclerView
+import com.example.base44.adaptor.ProductAdapter
 import com.example.base44.dataClass.CartManager
 import com.example.base44.dataClass.CartRow
+import com.example.base44.dataClass.Product
 import com.example.base44.dataClass.add_to_cart_item
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class MyBottomSheet(private val itemName: String) : BottomSheetDialogFragment() {
+class MyBottomSheet() : BottomSheetDialogFragment() {
+
+    // Either single product or multiple products
+    private var singleProduct: Product? = null
+    private var multipleProducts: List<Product>? = null
+
+    constructor(product: Product) : this() {
+        singleProduct = product
+    }
+
+    constructor(products: List<Product>) : this() {
+        multipleProducts = products
+    }
 
     private lateinit var tvItemHeading: TextView
     private lateinit var etPasteSlip: EditText
-    private lateinit var btnProcess: Button
     private lateinit var btnAddRow: Button
     private lateinit var spinnerValues: List<String>
     private lateinit var btnAddToCart: Button
@@ -29,15 +46,26 @@ class MyBottomSheet(private val itemName: String) : BottomSheetDialogFragment() 
         val view = inflater.inflate(R.layout.fragment_add_to_cart__b_s, container, false)
         initViews(view)
         setupSpinnerValues()
-        tvItemHeading.text = "Add $itemName to Cart"
+
+        // Heading
+        tvItemHeading.text = when {
+            singleProduct != null -> "Add ${singleProduct!!.title} to Cart"
+            multipleProducts != null -> {
+                val names = multipleProducts!!.joinToString(", ") { it.title }
+                "Add $names to Cart"
+            }
+
+            else -> "Add Item to Cart"
+        }
+
+        setupInitialRows(3)
+        setupAddRowButton()
+
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        setupInitialRows(3)
-        setupAddRowButton()
 
         btnAddToCart.setOnClickListener {
             if (!isCartDataValid()) {
@@ -49,8 +77,29 @@ class MyBottomSheet(private val itemName: String) : BottomSheetDialogFragment() 
                 return@setOnClickListener
             }
 
-            val cartItem = collectData()
-            CartManager.addItem(cartItem)
+            // Single product
+            singleProduct?.let {
+                val cartItem = collectData(it.title, it.imageRes, it.code)
+                cartItem.tempInvoice = generateTempInvoice()
+                CartManager.addItem(cartItem)
+                it.isAddedToCart = false
+
+            }
+
+            // Multiple products
+            multipleProducts?.forEach { product ->
+                val cartItem = collectData(product.title, product.imageRes , product.code)
+                cartItem.tempInvoice = generateTempInvoice()
+                CartManager.addItem(cartItem)
+
+            }
+            multipleProducts?.forEach { it.isAddedToCart = false }
+            (activity as? MainActivity)?.let { main ->
+                (main.findViewById<RecyclerView>(R.id.rvProducts)?.adapter as? ProductAdapter)
+                    ?.notifyDataSetChanged()
+                main.updateSelectedItems(emptyList())
+            }
+
             dismiss()
         }
     }
@@ -58,7 +107,6 @@ class MyBottomSheet(private val itemName: String) : BottomSheetDialogFragment() 
     private fun initViews(view: View) {
         tvItemHeading = view.findViewById(R.id.tvItemHeading)
         etPasteSlip = view.findViewById(R.id.etPasteSlip)
-        btnProcess = view.findViewById(R.id.btnProcess)
         btnAddRow = view.findViewById(R.id.btnAddRow)
         btnAddToCart = view.findViewById(R.id.btnAddToCart)
     }
@@ -117,17 +165,6 @@ class MyBottomSheet(private val itemName: String) : BottomSheetDialogFragment() 
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerValues)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
-
-        spinner.post {
-            try {
-                spinner.dropDownVerticalOffset = 5.dpToPx()
-                spinner.dropDownHorizontalOffset = 0
-                spinner.dropDownWidth = 50.dpToPx()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
         return spinner
     }
 
@@ -143,27 +180,25 @@ class MyBottomSheet(private val itemName: String) : BottomSheetDialogFragment() 
         btnAddRow.setOnClickListener { addNewRowToTable() }
     }
 
-    // Validation: At least 1 valid row must exist
+    private val categoryMap = listOf(
+        "B", "X", "A", "IB", "BX", "BXA", "BXS"
+    )
+
     private fun isCartDataValid(): Boolean {
         val tableLayout = view?.findViewById<TableLayout>(R.id.tableLayout) ?: return false
-        var hasValidRow = false
         for (i in 1 until tableLayout.childCount) {
             val row = tableLayout.getChildAt(i) as? TableRow ?: continue
             val number = (row.getChildAt(0) as EditText).text.toString().trim()
-            val categories = mutableListOf<String>()
+            var hasChecked = false
             for (j in 2 until row.childCount) {
-                val cb = row.getChildAt(j) as? CheckBox
-                cb?.let { if (it.isChecked) categories.add(it.text.toString()) }
+                if ((row.getChildAt(j) as? CheckBox)?.isChecked == true) hasChecked = true
             }
-            if (number.isNotBlank() && categories.isNotEmpty()) {
-                hasValidRow = true
-                break
-            }
+            if (number.isNotBlank() && hasChecked) return true
         }
-        return hasValidRow
+        return false
     }
 
-    private fun collectData(): add_to_cart_item {
+    private fun collectData(name: String, image: Int, code: String): add_to_cart_item {
         val tableLayout = view?.findViewById<TableLayout>(R.id.tableLayout)
         val raceDaysLayout = view?.findViewById<LinearLayout>(R.id.raceDaysLayout)
         val selectedRaceDays = mutableListOf<String>()
@@ -179,29 +214,34 @@ class MyBottomSheet(private val itemName: String) : BottomSheetDialogFragment() 
             val amount = (row.getChildAt(1) as Spinner).selectedItem.toString()
             val categories = mutableListOf<String>()
             for (j in 2 until row.childCount) {
-                val cb = row.getChildAt(j) as? CheckBox
-                cb?.let { if (it.isChecked) categories.add(it.text.toString()) }
+                val cb = row.getChildAt(j) as? CheckBox ?: continue
+                if (cb.isChecked) {
+                    val index = j - 2
+                    if (index in categoryMap.indices) categories.add(categoryMap[index])
+                }
             }
             if (number.isBlank() || categories.isEmpty()) continue
-            rowsList.add(
-                CartRow(
-                    number = number,
-                    amount = amount,
-                    selectedCategories = categories
-                )
-            )
+            rowsList.add(CartRow(number, amount, categories))
         }
 
         val bettingSlipText = view?.findViewById<EditText>(R.id.etPasteSlip)?.text?.toString()
             ?.takeIf { it.isNotBlank() }
 
         return add_to_cart_item(
-            productName = itemName,
+            productName = name,
             bettingSlip = bettingSlipText,
             raceDays = selectedRaceDays,
-            rows = rowsList
+            rows = rowsList,
+            imageRes = image,
+            productCode = code
         )
     }
 
     private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
+
+    private fun generateTempInvoice(): String {
+        val sdf = SimpleDateFormat("dd/MM", Locale.getDefault())
+        val date = sdf.format(Date())
+        return "$date/TNaN"
+    }
 }

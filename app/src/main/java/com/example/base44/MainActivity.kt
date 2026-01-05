@@ -12,6 +12,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.example.base44.auth.login
+import com.example.base44.dataClass.CartManager
 import com.example.base44.dataClass.Product
 import com.example.base44.fragments.HomeFragment
 import com.example.base44.fragments.ordersFragment
@@ -29,14 +30,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
-
     private lateinit var drawerLayout: DrawerLayout
     internal lateinit var toolbar: MaterialToolbar
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var navView: NavigationView
     private lateinit var logoutBtn: Button
     private lateinit var googleSignInClient: GoogleSignInClient
-    private val selectedItems = mutableListOf<String>()
+    private val selectedProducts = mutableListOf<Product>()
     private lateinit var btnAddToCartTop: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +44,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         initViews()
-        setupGoogleSignIn()
         setupToolbar()
         setupBottomNav()
         setupNavView()
@@ -55,7 +54,6 @@ class MainActivity : AppCompatActivity() {
             loadFragment(HomeFragment())
         }
     }
-
 
     private fun initViews() {
         drawerLayout = findViewById(R.id.drawerLayout)
@@ -87,22 +85,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupGoogleSignIn() {
-        val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
-            com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
-        )
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-
-        googleSignInClient =
-            com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(this, gso)
-    }
-
     private fun setupToolbar() {
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_cart) {
-                BottomSheetCart().show(supportFragmentManager, "CartBottomSheet")
+                BottomSheetCart(CartManager.cartItems)
+                    .show(supportFragmentManager, "CartBottomSheet")
                 true
             } else false
         }
@@ -142,28 +129,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ======= Top AddToCart Button =======
     private fun setupTopCartButton() {
         btnAddToCartTop.setOnClickListener {
-            val itemsString = selectedItems.joinToString(", ")
-            val bottomSheet = MyBottomSheet(itemsString)
-            bottomSheet.show(supportFragmentManager, "AddToCartBottomSheet")
+            if (selectedProducts.isNotEmpty()) {
+                // Pass all selected products to the same sheet
+                val bottomSheet = MyBottomSheet(selectedProducts)
+                bottomSheet.show(supportFragmentManager, "AddToCartBottomSheet")
+            }
         }
     }
+
+    fun showTopAddToCartButton(show: Boolean) {
+        btnAddToCartTop.visibility = if (show) View.VISIBLE else View.GONE
+        toolbar.title = if (show) "" else "Golden Sparrow"
+    }
+
+    // MainActivity
+
+    fun updateSelectedItems(products: List<Product>) {
+        selectedProducts.clear()
+        selectedProducts.addAll(products)
+
+        btnAddToCartTop.visibility = if (selectedProducts.isNotEmpty()) View.VISIBLE else View.GONE
+        toolbar.title = if (selectedProducts.isNotEmpty()) "" else "Golden Sparrow"
+    }
+
 
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
-    }
-
-    fun showTopAddToCartButton(show: Boolean) {
-        if (show) {
-            toolbar.title = ""
-            btnAddToCartTop.visibility = View.VISIBLE
-        } else {
-            toolbar.title = "Golden Sparrow"
-            btnAddToCartTop.visibility = View.GONE
-        }
     }
 
     fun enableDrawer(enable: Boolean) {
@@ -189,19 +185,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
                 .show()
-        }
-    }
-
-    fun updateSelectedItems(selectedProducts: List<Product>) {
-        selectedItems.clear()
-        selectedProducts.forEach { selectedItems.add(it.title) }
-
-        if (selectedItems.isNotEmpty()) {
-            toolbar.title = ""
-            btnAddToCartTop.visibility = View.VISIBLE
-        } else {
-            toolbar.title = "Golden Sparrow"
-            btnAddToCartTop.visibility = View.GONE
         }
     }
 }

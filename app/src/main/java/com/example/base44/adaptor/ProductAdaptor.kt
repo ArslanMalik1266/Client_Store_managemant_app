@@ -8,13 +8,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.example.base44.MyBottomSheet
 import com.example.base44.R
 import com.google.android.material.checkbox.MaterialCheckBox
 
 class ProductAdapter(
     private val products: List<Product>,
-    private val onAddToCartClicked: (product: Product) -> Unit,
+    private val onAddToCartClicked: (Product) -> Unit,
     private val onSelectionChanged: (List<Product>) -> Unit
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 

@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.R
 import com.example.base44.dataClass.OrderItem
@@ -24,10 +24,9 @@ class OrdersAdapter(
         val productImage: ImageView = itemView.findViewById(R.id.cartImage)
         val productName: TextView = itemView.findViewById(R.id.cart_item_name)
         val productCode: TextView = itemView.findViewById(R.id.cart_item_code)
-        val hashtagTv: TextView = itemView.findViewById(R.id.hashtag_code_tv)
-        val rmTv: TextView = itemView.findViewById(R.id.rm_code_tv)
         val totalLabel: TextView = itemView.findViewById(R.id.total_tv)
         val totalAmount: TextView = itemView.findViewById(R.id.total_amount)
+        val rvRows : RecyclerView = itemView.findViewById(R.id.recyclerview_orderSizes)
 
         init {
             itemView.setOnClickListener {
@@ -51,10 +50,10 @@ class OrdersAdapter(
         holder.productImage.setImageResource(item.productImage)
         holder.productName.text = item.productName
         holder.productCode.text = item.productCode
-        holder.hashtagTv.text = item.hashtag
-        holder.rmTv.text = item.rmAmount
         holder.totalLabel.text = item.totalLabel
         holder.totalAmount.text = item.totalAmount
+        holder.rvRows.layoutManager = LinearLayoutManager(holder.itemView.context)
+        holder.rvRows.adapter = TagAdapter(item.rows)
     }
 
     override fun getItemCount(): Int = orderList.size

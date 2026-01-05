@@ -13,6 +13,7 @@ import com.example.base44.MainActivity
 import com.example.base44.R
 import com.example.base44.adaptor.OrdersAdapter
 import com.example.base44.dataClass.OrderItem
+import com.example.base44.dataClass.OrdersManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class ordersFragment : Fragment() {
@@ -33,7 +34,8 @@ class ordersFragment : Fragment() {
 
         setupToolbar(view)
         initRecyclerView(view)
-        loadOrders()
+        orders.clear()
+        orders.addAll(OrdersManager.orders)
         setupAdapter()
 
         return view
@@ -75,28 +77,12 @@ class ordersFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
     }
 
-    private fun loadOrders() {
-        orders.clear()
-        repeat(20) {
-            orders.add(
-                OrderItem(
-                    invoiceNumber = "INV 1766568425043",
-                    status = "Completed",
-                    dateAdded = "24 Dec 2025, 12:00 AM",
-                    raceDay = "Wed",
-                    productImage = R.drawable.watch_image,
-                    productName = "Toto",
-                    productCode = "SW-2045",
-                    hashtag = "#7866",
-                    rmAmount = "RM 2.00",
-                    totalAmount = "RM 24.00"
-                )
-            )
-        }
-    }
-
     private fun setupAdapter() {
         val adapter = OrdersAdapter(orders)
         recyclerView.adapter = adapter
+    }
+
+    fun generateFinalInvoice(): String {
+        return "INV-${System.currentTimeMillis()}"
     }
 }

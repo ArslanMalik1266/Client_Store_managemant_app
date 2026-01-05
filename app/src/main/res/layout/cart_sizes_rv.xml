@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingVertical="4dp"
+    android:paddingHorizontal="12dp"
+    android:layout_marginVertical="2dp"
+    android:background="@color/off_white">
 
 
     <androidx.cardview.widget.CardView
@@ -29,12 +33,19 @@
 
     </androidx.cardview.widget.CardView>
 
+    <LinearLayout
+        android:id="@+id/categoriesContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cardview_b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:cardCornerRadius="16dp"
+        android:visibility="gone"
         android:layout_marginStart="4dp"
        >
 
@@ -58,6 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:cardCornerRadius="16dp"
+        android:visibility="gone"
         android:layout_marginStart="4dp"
         >
 
@@ -81,6 +93,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:cardCornerRadius="16dp"
+        android:visibility="gone"
         android:layout_marginStart="4dp"
         >
 
@@ -103,6 +116,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:cardCornerRadius="16dp"
+        android:visibility="gone"
         android:layout_marginStart="4dp"
        >
 
@@ -125,6 +139,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:cardCornerRadius="16dp"
+        android:visibility="gone"
         android:layout_marginStart="4dp"
        >
 
@@ -146,6 +161,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:visibility="gone"
         app:cardCornerRadius="16dp"
         android:layout_marginStart="4dp"
         >
@@ -167,6 +183,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:visibility="gone"
         app:cardCornerRadius="16dp"
         android:layout_marginStart="4dp"
        >
@@ -183,8 +200,10 @@
             android:textSize="10sp" />
     </androidx.cardview.widget.CardView>
 
+    </LinearLayout>
+
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardView3"
+        android:id="@+id/cartRM"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"

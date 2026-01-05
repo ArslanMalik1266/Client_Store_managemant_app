@@ -5,7 +5,7 @@ object CartManager {
     val cartItems = mutableListOf<add_to_cart_item>()
 
     fun addItem(item: add_to_cart_item) {
-        cartItems.add(item)
+        cartItems.add(0, item)
     }
 
     fun removeItem(position: Int) {

@@ -9,6 +9,7 @@ data class OrderItem(
     val productName: String,
     val productCode: String,
     val hashtag: String,
+    val rows: List<CartRow>,
     val rmAmount: String,
     val totalLabel: String = "TOTAL",
     val totalAmount: String
