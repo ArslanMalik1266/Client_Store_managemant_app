@@ -27,6 +27,7 @@ class CartAdapter(
         val rvRows: RecyclerView = itemView.findViewById(R.id.recyclerview_cartsizes)
         val deleteBtn: ImageView = itemView.findViewById(R.id.cartDelete_item)
         val cartImage: ImageView = itemView.findViewById(R.id.cartImage)
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartViewHolder {

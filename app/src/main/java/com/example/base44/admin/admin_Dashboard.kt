@@ -13,8 +13,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.R
 import com.example.base44.adaptor.UserAdapte_admin
+import com.example.base44.adaptor.utils.SessionManager
 import com.example.base44.auth.login
 import com.example.base44.dataClass.User_for_admin
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 
 class admin_Dashboard : AppCompatActivity() {
@@ -24,9 +26,23 @@ class admin_Dashboard : AppCompatActivity() {
 
     private lateinit var rvUsers: RecyclerView
     private lateinit var logoutButton: Button
+    private lateinit var session: SessionManager
+
+    override fun onStart() {
+        super.onStart()
+
+        if (!session.isLoggedIn() || session.getRole() != "admin") {
+            startActivity(Intent(this, login::class.java))
+            finish()
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin_dashboard)
+
+        session = SessionManager(this)
 
         drawerLayout = findViewById(R.id.drawerLayout)
         navView = findViewById(R.id.navView)
@@ -36,7 +52,13 @@ class admin_Dashboard : AppCompatActivity() {
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.topAppBar)
         setSupportActionBar(toolbar)
 
-        toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close)
+        toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.drawer_open,
+            R.string.drawer_close
+        )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
@@ -47,7 +69,8 @@ class admin_Dashboard : AppCompatActivity() {
             User_for_admin("2", "Ali Khan", "ali@example.com", 1500, 750)
         )
 
-        val adapter = UserAdapte_admin(users,
+        val adapter = UserAdapte_admin(
+            users,
             onEditCreditsClick = { user ->
                 // Show dialog to edit credits
             },
@@ -67,9 +90,23 @@ class admin_Dashboard : AppCompatActivity() {
     }
 
     private fun logout() {
-        val intent = Intent(this, login::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
+        logoutButton.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setCancelable(false)
+                .setPositiveButton("Yes") { _, _ ->
+                    session.logout()
+                    val intent = Intent(this, login::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton("No") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
     }
 }

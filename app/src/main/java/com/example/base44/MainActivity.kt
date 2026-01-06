@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import com.example.base44.adaptor.utils.SessionManager
 import com.example.base44.auth.login
 import com.example.base44.dataClass.CartManager
 import com.example.base44.dataClass.Product
@@ -38,10 +39,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private val selectedProducts = mutableListOf<Product>()
     private lateinit var btnAddToCartTop: Button
+    private lateinit var session: SessionManager
+
+    override fun onStart() {
+        super.onStart()
+        if (!session.isLoggedIn() || session.getRole() != "user") {
+            startActivity(Intent(this, login::class.java))
+            finish()
+        }
+    }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        session = SessionManager(this)
+
 
         initViews()
         setupToolbar()
@@ -177,7 +191,12 @@ class MainActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .setPositiveButton("Yes") { _, _ ->
                     auth.signOut()
-                    googleSignInClient.signOut()
+                    try {
+                        googleSignInClient.signOut()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                    session.logout()
                     val intent = Intent(this, login::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)

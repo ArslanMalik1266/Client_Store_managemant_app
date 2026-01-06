@@ -11,6 +11,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.example.base44.MainActivity
 import com.example.base44.R
+import com.example.base44.adaptor.utils.SessionManager
+import com.example.base44.admin.admin_Dashboard
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -28,21 +30,20 @@ class signUp : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var session: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_sign_up)
 
+        session = SessionManager(this)
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
-
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
         etConfirmPassword = findViewById(R.id.etConfirmPassword)
         etUsername = findViewById(R.id.etUserName)
         btnSignup = findViewById(R.id.btnSignup)
-        btnGoogleLogin = findViewById(R.id.btnGoogleLogin)
         tvLoginIn = findViewById(R.id.tvLoginIn)
 
         btnSignup.setOnClickListener {
@@ -61,26 +62,32 @@ class signUp : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            btnSignup.isEnabled = false
+            Toast.makeText(this, "Creating account, please wait...", Toast.LENGTH_SHORT).show()
+
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val uid = auth.currentUser?.uid
                         val userMap = hashMapOf(
                             "username" to username,
-                            "email" to email
+                            "email" to email,
+                            "role" to if (email == "admin123@admin.com") "admin" else "user"
                         )
 
                         if (uid != null) {
                             db.collection("users").document(uid)
                                 .set(userMap)
-                                .addOnSuccessListener {
-                                    Toast.makeText(
-                                        this,
-                                        "Account created successfully",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    val intent = Intent(this, MainActivity::class.java)
+                                .addOnCompleteListener {
+                                    val role = if (email == "admin123@admin.com") "admin" else "user"
+                                    session.saveLogin(role)
+
+                                    val targetActivity = if (role == "admin") admin_Dashboard::class.java else MainActivity::class.java
+
+                                    val intent = Intent(this, targetActivity)
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    intent.putExtra("username", username)
+                                    intent.putExtra("email", email)
                                     startActivity(intent)
                                     finish()
                                 }
@@ -93,6 +100,7 @@ class signUp : AppCompatActivity() {
                                 }
                         }
                     } else {
+                        btnSignup.isEnabled = true
                         Toast.makeText(this, task.exception?.message, Toast.LENGTH_SHORT).show()
                     }
                 }

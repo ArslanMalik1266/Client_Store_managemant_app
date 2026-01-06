@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.base44.MainActivity
 import com.example.base44.R
+import com.example.base44.adaptor.utils.SessionManager
 import com.example.base44.admin.admin_Dashboard
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -23,23 +24,9 @@ class login : AppCompatActivity() {
     private lateinit var btnLogin: Button
     private lateinit var btnGoogleLogin: LinearLayout
     private lateinit var tvSignup: TextView
-
     private lateinit var auth: FirebaseAuth
-    private lateinit var googleSignInClient: GoogleSignInClient
-    private val RC_SIGN_IN = 100
+    private lateinit var session: SessionManager
 
-
-    override fun onStart() {
-        super.onStart()
-
-        if (FirebaseAuth.getInstance().currentUser != null) {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags =
-                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
-        }
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,18 +38,15 @@ class login : AppCompatActivity() {
         btnLogin = findViewById(R.id.btnLogin)
         btnGoogleLogin = findViewById(R.id.btnGoogleLogin)
         tvSignup = findViewById(R.id.tvSignup)
+        session = SessionManager(this)
 
-
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id)) // firebase ke console se mila
-            .requestEmail()
-            .build()
-
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-        btnGoogleLogin.setOnClickListener {
-            val signInIntent = googleSignInClient.signInIntent
-            startActivityForResult(signInIntent, RC_SIGN_IN)
+        if (session.isLoggedIn()) {
+            when (session.getRole()) {
+                "admin" -> startActivity(Intent(this, admin_Dashboard::class.java))
+                "user" -> startActivity(Intent(this, MainActivity::class.java))
+            }
+            finish()
+            return
         }
 
 
@@ -87,6 +71,7 @@ class login : AppCompatActivity() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         if (email == "admin123@admin.com") {
+                            session.saveLogin("admin")
                             val intent = Intent(this, admin_Dashboard::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
@@ -94,6 +79,7 @@ class login : AppCompatActivity() {
                             finish()
                             return@addOnCompleteListener
                         }
+                        session.saveLogin("user")
                         val intent = Intent(this, MainActivity::class.java)
                         intent.flags =
                             Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

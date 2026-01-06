@@ -78,7 +78,7 @@ class BottomSheetCart(private val cartItems: List<add_to_cart_item>) : BottomShe
                     productCode = cart.productCode,
                     hashtag = "#${System.currentTimeMillis().toString().takeLast(4)}",
                     rmAmount = "RM 2.00",
-                    totalAmount = "RM 24.00"
+                    totalAmount = cart.totalAmount.toString()
 
                 )
             }

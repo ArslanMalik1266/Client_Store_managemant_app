@@ -191,12 +191,12 @@
                     android:fontFamily="@font/inter_bold" />
 
                 <TextView
-                    android:id="@+id/tvTotalAmount"
+                    android:id="@+id/tvTotalAmount_a"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="end"
-                    android:text="RM 25.00"
+                    android:text="RM 0.00"
                     android:textColor="@color/green"
                     android:textSize="18sp"
                     android:fontFamily="@font/inter_bold" />
