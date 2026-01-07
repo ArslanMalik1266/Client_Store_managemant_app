@@ -72,10 +72,12 @@ class signUp : AppCompatActivity() {
                         val userMap = hashMapOf(
                             "username" to username,
                             "email" to email,
-                            "role" to if (email == "admin123@admin.com") "admin" else "user"
+                            "role" to if (email == "admin123@admin.com") "admin" else "user",
+                            "walletBalance" to 0
                         )
 
                         if (uid != null) {
+
                             db.collection("users").document(uid)
                                 .set(userMap)
                                 .addOnCompleteListener {

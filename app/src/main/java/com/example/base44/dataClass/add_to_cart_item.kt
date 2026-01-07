@@ -9,7 +9,8 @@ data class add_to_cart_item(
     val imageRes: Int,
     var totalAmount: Double = 0.0,
     var tempInvoice: String? = null,
-    var finalInvoice: String? = null
+    var finalInvoice: String? = null,
+    var walletBalance: Int = 0
 )
 
 data class CartRow(

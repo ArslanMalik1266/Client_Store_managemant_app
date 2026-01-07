@@ -12,7 +12,7 @@ import com.example.base44.R
 import com.example.base44.dataClass.OrderItem
 
 class OrdersAdapter(
-    private val orderList: List<OrderItem>,
+    private var orderList: List<OrderItem>,
     private val onItemClick: ((position: Int) -> Unit)? = null
 ) : RecyclerView.Adapter<OrdersAdapter.OrderViewHolder>() {
 
@@ -57,4 +57,9 @@ class OrdersAdapter(
     }
 
     override fun getItemCount(): Int = orderList.size
+
+    fun updateData(newList: List<OrderItem>) {
+        orderList = newList
+        notifyDataSetChanged()
+    }
 }

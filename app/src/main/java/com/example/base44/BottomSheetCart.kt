@@ -126,9 +126,7 @@ class BottomSheetCart(private val cartItems: List<add_to_cart_item>) : BottomShe
     }
 
     private fun updateTotal() {
-        val total = cartItems.sumOf { item ->
-            item.rows.sumOf { row -> row.amount.toDoubleOrNull() ?: 0.0 }
-        }
+        val total = cartItems.sumOf { it.totalAmount }
         totalText.text = "Total RM: %.2f".format(total)
     }
 }

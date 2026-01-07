@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tvCurrentCredits"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Current Credits: 0"
+        android:textSize="16sp"
+        android:fontFamily="@font/inter_medium" />
+
+    <EditText
+        android:id="@+id/etAddCredits"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="Add Credits"
+        android:layout_marginTop="12dp"/>
+
+    <Button
+        android:id="@+id/btnAddCredits"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/green"
+        android:textColor="@android:color/white"/>
+</LinearLayout>

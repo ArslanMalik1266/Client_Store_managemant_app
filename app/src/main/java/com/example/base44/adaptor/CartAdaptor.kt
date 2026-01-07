@@ -14,7 +14,7 @@ import com.example.base44.dataClass.add_to_cart_item
 
 class CartAdapter(
     private val cartList: List<add_to_cart_item>,
-    private val onDeleteClick: ((position: Int) -> Unit)? = null // optional
+    private val onDeleteClick: ((position: Int) -> Unit)? = null
 ) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
     private val cartItems = cartList.toMutableList()

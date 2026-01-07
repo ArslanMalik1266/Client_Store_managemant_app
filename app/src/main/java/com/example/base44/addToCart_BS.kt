@@ -49,7 +49,6 @@ class MyBottomSheet() : BottomSheetDialogFragment() {
         val view = inflater.inflate(R.layout.fragment_add_to_cart__b_s, container, false)
         initViews(view)
         setupSpinnerValues()
-        setupInitialRows(3)
         setupAddRowButton()
         setupPasteSlipListener()
 
@@ -69,6 +68,7 @@ class MyBottomSheet() : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRaceDaysListeners()
+        setupInitialRows(3)
         btnAddToCart.setOnClickListener {
             if (!isCartDataValid()) {
                 Toast.makeText(
