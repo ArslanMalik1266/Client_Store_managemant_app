@@ -3,7 +3,6 @@ package com.example.base44.adaptor
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.R
@@ -18,12 +17,11 @@ class UserAdapte_admin(
     inner class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvName: TextView = itemView.findViewById(R.id.tvUserName)
         val tvEmail: TextView = itemView.findViewById(R.id.tvUserEmail)
-        val btnEditCredits: Button = itemView.findViewById(R.id.btnEditCredits)
+        val btnEdit: TextView = itemView.findViewById(R.id.btnEditCredits)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_users, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_users, parent, false)
         return UserViewHolder(view)
     }
 
@@ -32,13 +30,8 @@ class UserAdapte_admin(
         holder.tvName.text = user.fullName
         holder.tvEmail.text = user.email
 
-        holder.btnEditCredits.setOnClickListener {
-            onEditCreditsClick(user)
-        }
-
-        holder.itemView.setOnClickListener {
-            onItemClick(user)
-        }
+        holder.itemView.setOnClickListener { onItemClick(user) }
+        holder.btnEdit.setOnClickListener { onEditCreditsClick(user) }
     }
 
     override fun getItemCount(): Int = users.size

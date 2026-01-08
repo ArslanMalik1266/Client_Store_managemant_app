@@ -73,7 +73,9 @@ class signUp : AppCompatActivity() {
                             "username" to username,
                             "email" to email,
                             "role" to if (email == "admin123@admin.com") "admin" else "user",
-                            "walletBalance" to 0
+                            "walletBalance" to 0,
+                            "creditLimit" to 0,
+                            "totalSales" to 0
                         )
 
                         if (uid != null) {

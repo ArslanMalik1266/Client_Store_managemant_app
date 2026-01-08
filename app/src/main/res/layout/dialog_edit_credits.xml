@@ -9,7 +9,7 @@
         android:id="@+id/tvCurrentCredits"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Current Credits: 0"
+        android:text="Current Balance: 0"
         android:textSize="16sp"
         android:fontFamily="@font/inter_medium" />
 
@@ -18,14 +18,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:hint="Add Credits"
+        android:hint="Current Balance"
+        android:layout_marginTop="12dp"/>
+
+    <EditText
+        android:id="@+id/etCreditLimit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="Credit Limit"
+        android:layout_marginTop="12dp"/>
+
+    <EditText
+        android:id="@+id/etTotalSales"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="Total Sales"
         android:layout_marginTop="12dp"/>
 
     <Button
         android:id="@+id/btnAddCredits"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add"
+        android:text="Save"
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/green"
         android:textColor="@android:color/white"/>

@@ -78,8 +78,8 @@ class admin_Dashboard : AppCompatActivity() {
     private fun setupRecyclerView() {
         adapter = UserAdapte_admin(
             usersList,
-            onEditCreditsClick = { user -> showEditCreditsDialog(user) },
-            onItemClick = { user -> /* show user details if needed */ }
+            onEditCreditsClick = { user -> showQuickEditDialog(user) },
+            onItemClick = { user -> showUserDetailsDialog(user) }
         )
         rvUsers.adapter = adapter
         rvUsers.layoutManager = LinearLayoutManager(this)
@@ -88,7 +88,10 @@ class admin_Dashboard : AppCompatActivity() {
     private fun fetchUsersFromFirestore() {
         db.collection("users")
             .addSnapshotListener { snapshot, error ->
-                if (error != null) return@addSnapshotListener
+                if (error != null) {
+                    Log.e("AdminDashboard", "Firestore error: ${error.message}")
+                    return@addSnapshotListener
+                }
 
                 if (snapshot != null) {
                     usersList.clear()
@@ -98,18 +101,17 @@ class admin_Dashboard : AppCompatActivity() {
                             fullName = doc.getString("username") ?: "",
                             email = doc.getString("email") ?: "",
                             currentBalance = (doc.getLong("walletBalance") ?: 0).toInt(),
-
+                            creditLimit = (doc.getLong("creditLimit") ?: 0).toInt(),   // Added
+                            totalSales = (doc.getLong("totalSales") ?: 0).toInt()
                         )
                         usersList.add(user)
                     }
 
-                    Log.d("AdminDashboard", "Users: ${usersList.map { it.fullName }}")
+                    Log.d("AdminDashboard", "Fetched users: ${usersList.map { it.fullName }}")
                     adapter.notifyDataSetChanged()
                 }
             }
     }
-
-
 
     private fun logout() {
         MaterialAlertDialogBuilder(this)
@@ -127,13 +129,21 @@ class admin_Dashboard : AppCompatActivity() {
             .show()
     }
 
-    private fun showEditCreditsDialog(user: User_for_admin) {
+    private fun showQuickEditDialog(user: User_for_admin) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_edit_credits, null)
         val tvCurrentCredits = dialogView.findViewById<TextView>(R.id.tvCurrentCredits)
         val etAddCredits = dialogView.findViewById<EditText>(R.id.etAddCredits)
+
+        // Naye EditTexts for CreditLimit & TotalSales
+        val etCreditLimit = dialogView.findViewById<EditText>(R.id.etCreditLimit)
+        val etTotalSales = dialogView.findViewById<EditText>(R.id.etTotalSales)
         val btnAdd = dialogView.findViewById<Button>(R.id.btnAddCredits)
 
-        tvCurrentCredits.text = "Current Credits: ${user.currentBalance}"
+        // Set initial values
+        tvCurrentCredits.text = "Current Balance: ${user.currentBalance}"
+        etAddCredits.setText(user.currentBalance.toString())
+        etCreditLimit.setText(user.creditLimit.toString())
+        etTotalSales.setText(user.totalSales.toString())
 
         val dialog = MaterialAlertDialogBuilder(this)
             .setView(dialogView)
@@ -141,19 +151,64 @@ class admin_Dashboard : AppCompatActivity() {
             .create()
 
         btnAdd.setOnClickListener {
-            val added = etAddCredits.text.toString().toIntOrNull() ?: 0
-            if (added > 0) {
-                user.currentBalance += added
+            // Read values from EditTexts
+            val newBalance = etAddCredits.text.toString().toIntOrNull() ?: 0
+            val newCreditLimit = etCreditLimit.text.toString().toIntOrNull() ?: 0
+            val newTotalSales = etTotalSales.text.toString().toIntOrNull() ?: 0
 
-                // Update in Firestore
-                db.collection("users").document(user.id)
-                    .update("walletBalance", user.currentBalance)
+            // Update local object
+            user.currentBalance = newBalance
+            user.creditLimit = newCreditLimit
+            user.totalSales = newTotalSales
 
-                adapter.notifyDataSetChanged()
-                dialog.dismiss()
-            }
+            // Update Firestore
+            db.collection("users").document(user.id)
+                .update(
+                    mapOf(
+                        "walletBalance" to user.currentBalance,
+                        "creditLimit" to user.creditLimit,
+                        "totalSales" to user.totalSales
+                    )
+                ).addOnSuccessListener {
+                    adapter.notifyDataSetChanged()
+                }.addOnFailureListener { e ->
+                    Log.e("AdminDashboard", "Failed to update user: ${e.message}")
+                }
+
+            dialog.dismiss()
         }
 
         dialog.show()
     }
+
+
+
+    private fun showUserDetailsDialog(user: User_for_admin) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_user_details, null)
+
+        val tvName = dialogView.findViewById<TextView>(R.id.tvUserName)
+        val tvEmail = dialogView.findViewById<TextView>(R.id.tvUserEmail)
+        val tvBalance = dialogView.findViewById<TextView>(R.id.tvBalance)
+        val tvCreditLimit = dialogView.findViewById<TextView>(R.id.tvCreditLimit)
+        val tvTotalSales = dialogView.findViewById<TextView>(R.id.tvTotalSales)
+        val btnEdit = dialogView.findViewById<Button>(R.id.btnEditUser)
+
+        tvName.text = user.fullName
+        tvEmail.text = user.email
+        tvBalance.text = "Current Balance: ${user.currentBalance}"
+        tvCreditLimit.text = "Credit Limit: ${user.creditLimit}"
+        tvTotalSales.text = "Total Sales: ${user.totalSales}"
+
+        // Edit button inside dialog → open quick edit dialog
+        btnEdit.setOnClickListener {
+            showQuickEditDialog(user)
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setPositiveButton("Close") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+
 }
