@@ -40,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     private val selectedProducts = mutableListOf<Product>()
     private lateinit var btnAddToCartTop: Button
     private lateinit var session: SessionManager
+    var userAvailableBalance: Double = 0.0
+
 
     override fun onStart() {
         super.onStart()
@@ -102,7 +104,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupToolbar() {
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_cart) {
-                BottomSheetCart(CartManager.cartItems)
+                BottomSheetCart(CartManager.cartItems, userAvailableBalance)
                     .show(supportFragmentManager, "CartBottomSheet")
                 true
             } else false

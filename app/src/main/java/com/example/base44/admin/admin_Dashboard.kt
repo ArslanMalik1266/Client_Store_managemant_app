@@ -2,6 +2,7 @@ package com.example.base44.admin
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
@@ -87,10 +88,7 @@ class admin_Dashboard : AppCompatActivity() {
     private fun fetchUsersFromFirestore() {
         db.collection("users")
             .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    // Handle error
-                    return@addSnapshotListener
-                }
+                if (error != null) return@addSnapshotListener
 
                 if (snapshot != null) {
                     usersList.clear()
@@ -99,14 +97,18 @@ class admin_Dashboard : AppCompatActivity() {
                             id = doc.id,
                             fullName = doc.getString("username") ?: "",
                             email = doc.getString("email") ?: "",
-                            currentBalance = (doc.getLong("walletBalance") ?: 0).toInt()
+                            currentBalance = (doc.getLong("walletBalance") ?: 0).toInt(),
+
                         )
                         usersList.add(user)
                     }
+
+                    Log.d("AdminDashboard", "Users: ${usersList.map { it.fullName }}")
                     adapter.notifyDataSetChanged()
                 }
             }
     }
+
 
 
     private fun logout() {

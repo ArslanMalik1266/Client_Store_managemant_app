@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
@@ -21,11 +22,14 @@ class walletFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SimpleOrdersAdapter
     private lateinit var walletBalance: TextView
+    private lateinit var availableBalance: TextView
+    private lateinit var usedPercentText: TextView
+    private lateinit var progressBar: ProgressBar
 
     override fun onResume() {
         super.onResume()
         hideToolbarAndDrawer()
-        loadOrders()   // ✅ VERY IMPORTANT
+        loadOrders()
     }
 
     override fun onCreateView(
@@ -33,7 +37,10 @@ class walletFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_wallet, container, false)
-        walletBalance = view.findViewById<TextView>(R.id.walletBalance)
+        walletBalance = view.findViewById(R.id.walletBalance)
+        availableBalance = view.findViewById(R.id.availableBalance)
+        usedPercentText = view.findViewById(R.id.usedPercentText)
+        progressBar = view.findViewById(R.id.progressBar)
         setupToolbar(view)
         setupRecyclerView(view)
         return view
@@ -42,8 +49,18 @@ class walletFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val userWalletBalance = 0.0
+        val userWalletBalance = 5000.0
+        val totalUsedAmount = OrdersManager.getOrders().sumOf { it.totalAmount.toDouble() }
+        val currentAvailableBalance = userWalletBalance - totalUsedAmount
+
         walletBalance.text = "Credit Limit: RM $userWalletBalance"
+        availableBalance.text = "RM $currentAvailableBalance"
+        val percentUsed = ((totalUsedAmount / userWalletBalance) * 100).coerceIn(0.0, 100.0)
+        usedPercentText.text = "%.1f%% used".format(percentUsed)
+        progressBar.progress = percentUsed.toInt()
+
+        // Update MainActivity's available balance
+        (activity as? MainActivity)?.userAvailableBalance = currentAvailableBalance
     }
 
     private fun hideToolbarAndDrawer() {
@@ -75,7 +92,6 @@ class walletFragment : Fragment() {
 
     private fun loadOrders() {
         val orders = OrdersManager.getOrders()
-
         val simpleOrders = orders.map {
             SimpleOrderItem(
                 invoiceNumber = it.invoiceNumber,
@@ -84,7 +100,6 @@ class walletFragment : Fragment() {
                 status = it.status
             )
         }.reversed()
-
         adapter.updateData(simpleOrders)
     }
 }

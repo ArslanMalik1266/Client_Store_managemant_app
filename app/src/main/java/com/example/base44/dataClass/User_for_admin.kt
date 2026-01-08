@@ -4,5 +4,6 @@ data class User_for_admin(
     val id: String,
     val fullName: String,
     val email: String,
-    var currentBalance: Int
+    var currentBalance: Int,
+    val role: String = "user"
 )
