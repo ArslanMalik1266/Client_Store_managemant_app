@@ -46,15 +46,15 @@ class HomeFragment : Fragment() {
 
     private fun loadProducts() {
         productList.clear()
-        productList.add(Product("Wh-1001", "Kuda", R.drawable.headphones_image))
-        productList.add(Product("SW-2045", "Todo", R.drawable.watch_image))
-        productList.add(Product("LB-3022", "Magnum", R.drawable.bag_image))
-        productList.add(Product("DL-4015", "SG Pools", R.drawable.lamp_photo))
-        productList.add(Product("CS-5008", "Sabah", R.drawable.cup_image))
-        productList.add(Product("MK-6033", "SG Pools", R.drawable.keyboard_image))
-        productList.add(Product("PS-7019", "Dragon", R.drawable.speaker_image))
-        productList.add(Product("SG-8027", "Lotto", R.drawable.glasses_image))
-        productList.add(Product("FT-9041", "9Lotto", R.drawable.watch_image_2))
+        productList.add(Product("Wh-1001", "Kuda", "headphones_image"))
+        productList.add(Product("SW-2045", "Todo", "watch_image"))
+        productList.add(Product("LB-3022", "Magnum", "bag_image"))
+        productList.add(Product("DL-4015", "SG Pools", "lamp_photo"))
+        productList.add(Product("CS-5008", "Sabah", "cup_image"))
+        productList.add(Product("MK-6033", "SG Pools", "keyboard_image"))
+        productList.add(Product("PS-7019", "Dragon", "speaker_image"))
+        productList.add(Product("SG-8027", "Lotto", "glasses_image"))
+        productList.add(Product("FT-9041", "9Lotto", "watch_image_2"))
     }
     private fun setupAdapter() {
         productAdapter = ProductAdapter(

@@ -3,7 +3,7 @@ package com.example.base44.dataClass
 import java.io.Serializable
 
 data class CartItem(
-    val imageRes: Int,
+    val imageRes: String = "",
     val name: String,
     val code: String,
     val invoiceNumber: String,

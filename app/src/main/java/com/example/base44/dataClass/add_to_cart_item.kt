@@ -6,7 +6,7 @@ data class add_to_cart_item(
     val productCode: String,
     val raceDays: List<String> = emptyList(),
     val rows: List<CartRow>,
-    val imageRes: Int,
+    val drawableName: String = "",
     var totalAmount: Double = 0.0,
     var tempInvoice: String? = null,
     var finalInvoice: String? = null,

@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    id ("kotlin-kapt")
 }
 
 android {
@@ -56,4 +57,7 @@ dependencies {
     implementation ("com.google.android.flexbox:flexbox:3.0.0")
     implementation ("com.google.android.gms:play-services-auth:20.7.0")
     implementation ("com.google.firebase:firebase-firestore-ktx:25.1.4")
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    kapt ("com.github.bumptech.glide:compiler:4.16.0")
+
 }

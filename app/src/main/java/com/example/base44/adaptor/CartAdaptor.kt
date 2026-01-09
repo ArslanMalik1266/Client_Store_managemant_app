@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.base44.R
 import com.example.base44.dataClass.CartRow
 import com.example.base44.dataClass.add_to_cart_item
@@ -42,7 +43,11 @@ class CartAdapter(
         holder.productName.text = item.productName
         holder.productCode.text = item.productCode
         holder.invoiceNumber.text = item.tempInvoice?.let { "INV No: $it" } ?: "INV No: ---"
-        holder.cartImage.setImageResource(item.imageRes)
+        val resId = holder.itemView.context.resources.getIdentifier(
+            item.drawableName, "drawable", holder.itemView.context.packageName
+        )
+        holder.cartImage.setImageResource(resId)
+
         val dateText = if (item.raceDays.isNotEmpty()) {
             item.raceDays.last()
         } else {
@@ -66,6 +71,7 @@ class CartAdapter(
         cartItems.addAll(newList)
         notifyDataSetChanged()
     }
+
     fun addItemAtTop(item: add_to_cart_item, recyclerView: RecyclerView) {
         cartItems.add(0, item)       // add to top
         notifyItemInserted(0)         // notify adapter

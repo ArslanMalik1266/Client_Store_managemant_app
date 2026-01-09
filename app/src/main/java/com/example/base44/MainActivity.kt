@@ -42,22 +42,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var session: SessionManager
     var userAvailableBalance: Double = 0.0
 
-
     override fun onStart() {
         super.onStart()
+        session = SessionManager(this)
         if (!session.isLoggedIn() || session.getRole() != "user") {
             startActivity(Intent(this, login::class.java))
             finish()
         }
     }
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        session = SessionManager(this)
-
 
         initViews()
         setupToolbar()
@@ -83,17 +79,16 @@ class MainActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
+        // Initialize GoogleSignInClient here if needed
+        // googleSignInClient = ...
+
         val headerView = navView.getHeaderView(0)
         val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
 
-        val currentUser = auth.currentUser
-        currentUser?.uid?.let { uid ->
+        auth.currentUser?.uid?.let { uid ->
             db.collection("users").document(uid).get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        val username = document.getString("username")
-                        tvDrawerUsername.text = username ?: "User"
-                    }
+                .addOnSuccessListener { doc ->
+                    tvDrawerUsername.text = doc.getString("username") ?: "User"
                 }
                 .addOnFailureListener {
                     tvDrawerUsername.text = "User"
@@ -104,8 +99,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupToolbar() {
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_cart) {
-                BottomSheetCart(CartManager.cartItems, userAvailableBalance)
-                    .show(supportFragmentManager, "CartBottomSheet")
+                BottomSheetCart(userAvailableBalance) { newBalance ->
+                    userAvailableBalance = newBalance
+                }.show(supportFragmentManager, "CartBottomSheet")
                 true
             } else false
         }
@@ -120,8 +116,8 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColor(this, R.color.light_green)
         )
 
-        bottomNav.setOnItemSelectedListener {
-            when (it.itemId) {
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
                 R.id.nav_home -> loadFragment(HomeFragment())
                 R.id.nav_orders -> loadFragment(ordersFragment())
                 R.id.nav_result -> loadFragment(resultFragment())
@@ -135,7 +131,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupNavView() {
         navView.setNavigationItemSelectedListener {
             when (it.itemId) {
-                R.id.navHome -> bottomNav.selectedItemId = R.id.mainPage
+                R.id.navHome -> bottomNav.selectedItemId = R.id.nav_home
                 R.id.navOrders -> bottomNav.selectedItemId = R.id.nav_orders
                 R.id.navResult -> bottomNav.selectedItemId = R.id.nav_result
                 R.id.navWallet -> bottomNav.selectedItemId = R.id.nav_wallet
@@ -145,13 +141,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ======= Top AddToCart Button =======
     private fun setupTopCartButton() {
         btnAddToCartTop.setOnClickListener {
             if (selectedProducts.isNotEmpty()) {
-                // Pass all selected products to the same sheet
-                val bottomSheet = MyBottomSheet(selectedProducts)
-                bottomSheet.show(supportFragmentManager, "AddToCartBottomSheet")
+                MyBottomSheet(selectedProducts).show(supportFragmentManager, "AddToCartBottomSheet")
             }
         }
     }
@@ -161,16 +154,11 @@ class MainActivity : AppCompatActivity() {
         toolbar.title = if (show) "" else "Golden Sparrow"
     }
 
-    // MainActivity
-
     fun updateSelectedItems(products: List<Product>) {
         selectedProducts.clear()
         selectedProducts.addAll(products)
-
-        btnAddToCartTop.visibility = if (selectedProducts.isNotEmpty()) View.VISIBLE else View.GONE
-        toolbar.title = if (selectedProducts.isNotEmpty()) "" else "Golden Sparrow"
+        showTopAddToCartButton(selectedProducts.isNotEmpty())
     }
-
 
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
@@ -195,13 +183,11 @@ class MainActivity : AppCompatActivity() {
                     auth.signOut()
                     try {
                         googleSignInClient.signOut()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    } catch (_: Exception) {}
                     session.logout()
-                    val intent = Intent(this, login::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
+                    startActivity(Intent(this, login::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
                     finish()
                 }
                 .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
@@ -209,3 +195,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+

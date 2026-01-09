@@ -37,7 +37,10 @@ class ProductAdapter(
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = products[position]
 
-        holder.imgProduct.setImageResource(product.imageRes)
+        val resId = holder.itemView.context.resources.getIdentifier(
+            product.drawableName, "drawable", holder.itemView.context.packageName
+        )
+        holder.imgProduct.setImageResource(resId)
         holder.tvTitle.text = product.title
         holder.tvCode.text = product.code
         holder.cbAddToCart.isChecked = product.isAddedToCart

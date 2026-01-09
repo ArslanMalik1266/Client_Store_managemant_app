@@ -80,14 +80,14 @@ class MyBottomSheet() : BottomSheetDialogFragment() {
             }
 
             singleProduct?.let {
-                val cartItem = collectData(it.title, it.imageRes, it.code)
+                val cartItem = collectData(it.title, it.drawableName.toString(), it.code)
                 cartItem.tempInvoice = generateTempInvoice()
                 CartManager.addItem(cartItem)
                 it.isAddedToCart = false
             }
 
             multipleProducts?.forEach { product ->
-                val cartItem = collectData(product.title, product.imageRes, product.code)
+                val cartItem = collectData(product.title, product.drawableName.toString(), product.code)
                 cartItem.tempInvoice = generateTempInvoice()
                 CartManager.addItem(cartItem)
             }
@@ -290,7 +290,7 @@ class MyBottomSheet() : BottomSheetDialogFragment() {
 
 
 
-    private fun collectData(name: String, image: Int, code: String): add_to_cart_item {
+    private fun collectData(name: String, image: String, code: String): add_to_cart_item {
         val tableLayout = view?.findViewById<TableLayout>(R.id.tableLayout)
         val raceDaysLayout = view?.findViewById<LinearLayout>(R.id.raceDaysLayout)
 
@@ -341,7 +341,7 @@ class MyBottomSheet() : BottomSheetDialogFragment() {
             bettingSlip = bettingSlipText,
             raceDays = selectedRaceDays,
             rows = rowsList,
-            imageRes = image,
+            drawableName = image,
             productCode = code,
             totalAmount = total
         )

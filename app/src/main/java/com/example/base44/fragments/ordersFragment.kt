@@ -2,70 +2,83 @@ package com.example.base44.fragments
 
 import CheckResultsDialogFragment
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.MainActivity
 import com.example.base44.R
 import com.example.base44.adaptor.OrdersAdapter
+import com.example.base44.dataClass.CartRow
 import com.example.base44.dataClass.OrderItem
-import com.example.base44.dataClass.OrdersManager
 import com.example.base44.dataClass.isThisWeek
 import com.example.base44.dataClass.isToday
 import com.example.base44.dataClass.isYesterday
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.chip.Chip
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class ordersFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adaptor: OrdersAdapter
+    private lateinit var adapter: OrdersAdapter
     private val orders = mutableListOf<OrderItem>()
+
     private lateinit var tvOrdersCount: TextView
     private lateinit var tvTotalSalesAmount: TextView
     private lateinit var totalOrdersTv: TextView
-    private lateinit var chipGroup: com.google.android.material.chip.ChipGroup
+
+    private lateinit var chipToday: Chip
+    private lateinit var chipYesterday: Chip
+    private lateinit var chipThisWeek: Chip
+    private lateinit var chipAll: Chip
+    private lateinit var chipWinner: Chip
+
+    private val uid = FirebaseAuth.getInstance().uid ?: ""
+    private val db = FirebaseFirestore.getInstance()
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val view = inflater.inflate(R.layout.fragment_orders, container, false)
+
+        // Toolbar
+        setupToolbar(view)
+
+        // RecyclerView
+        recyclerView = view.findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        adapter = OrdersAdapter(orders)
+        recyclerView.adapter = adapter
+
+        // Stats TextViews
+        tvOrdersCount = view.findViewById(R.id.tvOrdersCount)
+        tvTotalSalesAmount = view.findViewById(R.id.tvTotalSalesAmount)
+        totalOrdersTv = view.findViewById(R.id.totalOrdersTv)
+
+        // Chips
+        setupChips(view)
+
+        // Load orders from Firestore
+        loadOrdersFromFirestore()
+
+        return view
+    }
 
     override fun onResume() {
         super.onResume()
         hideToolbarAndDrawer()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        tvOrdersCount = view.findViewById(R.id.tvOrdersCount)
-        tvTotalSalesAmount = view.findViewById(R.id.tvTotalSalesAmount)
-        totalOrdersTv = view.findViewById(R.id.totalOrdersTv)
-
-        setupChips(view)
-
-        // Initially update stats
-        updateRecyclerViewAndStats(orders)
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_orders, container, false)
-
-        setupToolbar(view)
-        initRecyclerView(view)
-        orders.clear()
-        orders.addAll(OrdersManager.getOrders())
-        setupAdapter()
-
-        return view
-    }
-
-
     private fun hideToolbarAndDrawer() {
-        val activity = activity as MainActivity
+        val activity = activity as? MainActivity ?: return
         activity.toolbar.visibility = View.GONE
         activity.enableDrawer(false)
     }
@@ -77,88 +90,99 @@ class ordersFragment : Fragment() {
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, HomeFragment())
                 .commit()
-
-            val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
-            bottomNav.selectedItemId = R.id.nav_home
+            requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
+                .selectedItemId = R.id.nav_home
         }
 
         toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.action_check_results -> {
-                    val dialog = CheckResultsDialogFragment()
-                    dialog.show(parentFragmentManager, "check_results_dialog")
-                    true
-                }
-                else -> false
-            }
+            if (item.itemId == R.id.action_check_results) {
+                CheckResultsDialogFragment().show(parentFragmentManager, "check_results_dialog")
+                true
+            } else false
         }
     }
 
-    private fun initRecyclerView(view: View) {
-        recyclerView = view.findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-    }
-
-    private fun setupAdapter() {
-      adaptor = OrdersAdapter(orders)
-        recyclerView.adapter = adaptor
-    }
-
-    fun generateFinalInvoice(): String {
-        return "INV-${System.currentTimeMillis()}"
-    }
-    private fun setupChips(view: View?) {
-        val chipToday = view?.findViewById<Chip>(R.id.chipToday)
-        val chipYesterday = view?.findViewById<Chip>(R.id.chipYesterday)
-        val chipThisWeek = view?.findViewById<Chip>(R.id.chipThisWeek)
-        val chipAll = view?.findViewById<Chip>(R.id.chipAll)
-        val chipWinner = view?.findViewById<Chip>(R.id.chipWinner)
+    private fun setupChips(view: View) {
+        chipToday = view.findViewById(R.id.chipToday)
+        chipYesterday = view.findViewById(R.id.chipYesterday)
+        chipThisWeek = view.findViewById(R.id.chipThisWeek)
+        chipAll = view.findViewById(R.id.chipAll)
+        chipWinner = view.findViewById(R.id.chipWinner)
 
         val chips = listOf(chipToday, chipYesterday, chipThisWeek, chipAll, chipWinner)
-
-        // single selection already set in XML (app:singleSelection="true")
         chips.forEach { chip ->
-            chip?.setOnClickListener {
-                filterOrders()
-            }
+            chip.setOnClickListener { filterOrders() }
         }
     }
+
+    private fun loadOrdersFromFirestore() {
+        if (uid.isEmpty()) return
+
+        db.collection("users").document(uid)
+            .collection("orders")
+            .get()
+            .addOnSuccessListener { result ->
+                orders.clear()
+                result.forEach { doc ->
+                    // Map rows
+                    val rowsList = (doc.get("rows") as? List<Map<String, Any>>)?.map { rowMap ->
+                        CartRow(
+                            number = rowMap["number"] as? String ?: "",
+                            amount = rowMap["amount"] as? String ?: "",
+                            selectedCategories = rowMap["selectedCategories"] as? List<String> ?: emptyList(),
+                            qty = (rowMap["qty"] as? Long)?.toInt() ?: 1
+                        )
+                    } ?: emptyList()
+
+                    // Map order
+                    val order = OrderItem(
+                        invoiceNumber = doc.getString("invoiceNumber") ?: "",
+                        dateAdded = doc.getString("dateAdded") ?: "",
+                        totalAmount = doc.getString("totalAmount") ?: "0",
+                        status = doc.getString("status") ?: "",
+                        productImage = doc.getString("productImage") ?: "",
+                        productName = doc.getString("productName") ?: "",
+                        productCode = doc.getString("productCode") ?: "",
+                        rows = rowsList
+                    )
+
+                    orders.add(order)
+                }
+
+                adapter.updateData(orders)
+                updateStats(orders)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Failed to load orders: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     private fun filterOrders() {
-        val chipToday = view?.findViewById<Chip>(R.id.chipToday)
-        val chipYesterday = view?.findViewById<Chip>(R.id.chipYesterday)
-        val chipThisWeek = view?.findViewById<Chip>(R.id.chipThisWeek)
-        val chipAll = view?.findViewById<Chip>(R.id.chipAll)
-        val chipWinner = view?.findViewById<Chip>(R.id.chipWinner)
-
-        var filtered = OrdersManager.getOrders()
-
-        when {
-            chipToday?.isChecked == true -> filtered = filtered.filter { it.isToday() }
-            chipYesterday?.isChecked == true -> filtered = filtered.filter { it.isYesterday() }
-            chipThisWeek?.isChecked == true -> filtered = filtered.filter { it.isThisWeek() }
-            chipAll?.isChecked == true -> {} // all, no filter
+        val filtered = when {
+            chipToday.isChecked -> orders.filter { it.isToday() }
+            chipYesterday.isChecked -> orders.filter { it.isYesterday() }
+            chipThisWeek.isChecked -> orders.filter { it.isThisWeek() }
+            chipAll.isChecked -> orders // no filter
+            else -> orders
         }
 
-//        if (chipWinner?.isChecked == true) {
+        // If you want winner chip filtering uncomment
+//        if (chipWinner.isChecked) {
 //            filtered = filtered.filter { order ->
-//                order.rows.any { row -> row.isWinner }  // assuming CartRow has isWinner
+//                order.rows.any { it.isWinner }
 //            }
 //        }
 
-        updateRecyclerViewAndStats(filtered)
+        adapter.updateData(filtered)
+        updateStats(filtered)
     }
 
-    private fun updateRecyclerViewAndStats(orderList: List<OrderItem>) {
-        // Update RecyclerView
-        adaptor.updateData(orderList)
-        // Update Orders Count
+    private fun updateStats(orderList: List<OrderItem>) {
         tvOrdersCount.text = orderList.size.toString()
         totalOrdersTv.text = "Total Check Orders = ${orders.size}"
-
-        // Total Sales calculation
         val total = orderList.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
         tvTotalSalesAmount.text = "RM %.2f".format(total)
     }
 
-
+    fun generateFinalInvoice(): String = "INV-${System.currentTimeMillis()}"
 }

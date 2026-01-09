@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.base44.R
 import com.example.base44.dataClass.OrderItem
 
@@ -47,8 +48,12 @@ class OrdersAdapter(
         holder.statusTv.text = item.status
         holder.dateTv.text = item.dateAdded
         holder.raceDayTv.text = "Race day: ${item.raceDay}"
-        holder.productImage.setImageResource(item.productImage)
-        holder.productName.text = item.productName
+        val resId = holder.itemView.context.resources.getIdentifier(
+            item.productImage, "drawable", holder.itemView.context.packageName
+        )
+        holder.productImage.setImageResource(resId)
+
+
         holder.productCode.text = item.productCode
         holder.totalLabel.text = item.totalLabel
         holder.totalAmount.text = item.totalAmount

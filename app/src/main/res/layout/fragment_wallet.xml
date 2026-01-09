@@ -49,65 +49,65 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/tvFilterDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:fontFamily="@font/inter_medium"
-                        android:text="Filter by Date"
-                        android:textColor="@color/black"
-                        android:textSize="14sp" />
 
-                    <LinearLayout
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupFilter"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:weightSum="3">
+                        app:selectionRequired="true"
+                        app:singleLine="true"
+                        android:scrollbars="horizontal"
+                        app:singleSelection="true">
 
-                        <TextView
-                            android:id="@+id/tvFromDate"
-                            android:layout_width="0dp"
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipToday"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1.2"
-                            android:background="@drawable/bg_date_field"
-                            android:fontFamily="@font/inter_regular"
-                            android:padding="8dp"
-                            android:text="01/01/2025"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:textColor="@color/black"
-                            android:textSize="14sp" />
+                            android:checked="true"
+                            android:text="Today"
+                            android:textSize="10sp"
+                            android:checkable="true"
+                            android:textColor="@color/chip_text_selector"
+                            app:checkedIconVisible="false"
+                            app:chipBackgroundColor="@color/chip_bg_color"
+                            app:chipStrokeColor="@color/strokeGrey" />
 
 
-                        <TextView
-                            android:id="@+id/tvToLabel"
-                            android:layout_width="0dp"
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipYesterday"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="8dp"
-                            android:layout_weight="0.6"
-                            android:fontFamily="@font/inter_regular"
-                            android:gravity="center"
-                            android:text="to"
-                            android:textColor="@color/black"
-                            android:textSize="14sp" />
+                            android:text="Yesterday"
+                            android:textSize="10sp"
+                            android:checkable="true"
+                            android:textColor="@color/chip_text_selector"
+                            app:chipBackgroundColor="@color/chip_bg_color"
+                            app:chipStrokeColor="@color/strokeGrey" />
 
-                        <TextView
-                            android:id="@+id/tvToDate"
-                            android:layout_width="0dp"
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipThisWeek"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1.2"
-                            android:background="@drawable/bg_date_field"
-                            android:fontFamily="@font/inter_regular"
-                            android:padding="8dp"
-                            android:text="31/12/2025"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:textColor="@color/black"
-                            android:textSize="14sp" />
+                            android:text="This Week"
+                            android:textSize="10sp"
+                            android:checkable="true"
+                            android:textColor="@color/chip_text_selector"
+                            app:chipBackgroundColor="@color/chip_bg_color"
+                            app:chipStrokeColor="@color/strokeGrey" />
 
-                    </LinearLayout>
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipAll"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="All"
+                            android:textSize="10sp"
+                            android:checkable="true"
+                            android:textColor="@color/chip_text_selector"
+                            app:chipBackgroundColor="@color/chip_bg_color"
+                            app:chipStrokeColor="@color/strokeGrey" />
+
+                    </com.google.android.material.chip.ChipGroup>
+
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -127,7 +127,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/inter_medium"
-                                android:text="Period for Sale"
+                                android:text="Period Sales"
                                 android:textColor="@color/black"
                                 android:textSize="14sp" />
 
@@ -270,16 +270,18 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/inter_medium"
-                            android:text="Total Sales"
+                            android:text="Credit Due Weekend"
                             android:textColor="@color/black"
-                            android:textSize="14sp" />
+                            android:textSize="12sp" />
 
                         <TextView
+                            android:id="@+id/creditDueWeek_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:fontFamily="@font/inter_bold"
                             android:text="RM 0.00"
+                            android:textColor="@color/golden"
                             android:textSize="16sp" />
 
                     </LinearLayout>
@@ -304,9 +306,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/inter_medium"
-                            android:text="Commission earned"
+                            android:text="This Week Commission"
                             android:textColor="@color/black"
-                            android:textSize="14sp" />
+                            android:textSize="12sp" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -315,12 +317,15 @@
                             android:orientation="horizontal">
 
                             <TextView
+                                android:id="@+id/weekCommission_id"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/inter_bold"
                                 android:text="RM 0.00"
                                 android:layout_weight="1"
                                 android:textSize="16sp" />
+
+
 
                             <androidx.cardview.widget.CardView
                                 android:id="@+id/comissionCard"
@@ -331,7 +336,6 @@
                                 app:layout_constraintTop_toBottomOf="@+id/cardView">
 
                                 <TextView
-                                    android:id="@+id/comissionText"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:background="@color/light_green"
@@ -347,7 +351,14 @@
 
                         </LinearLayout>
 
-
+                        <TextView
+                            android:id="@+id/comissionText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/inter_medium"
+                            android:text="Pay on Momday"
+                            android:textColor="@color/black"
+                            android:textSize="10sp" />
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
