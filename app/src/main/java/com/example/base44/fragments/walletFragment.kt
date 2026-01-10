@@ -25,8 +25,7 @@ import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
 
 class walletFragment : Fragment() {
 
@@ -51,7 +50,7 @@ class walletFragment : Fragment() {
     private val db = FirebaseFirestore.getInstance()
 
     private var creditLimit = 5000.0
-    private var currentAvailableBalance = 0.0
+    var currentAvailableBalance = 0.0
     private var orders = listOf<OrderItem>()
 
     override fun onCreateView(
@@ -60,7 +59,7 @@ class walletFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_wallet, container, false)
 
-        // Initialize views
+        // UI Init
         walletBalance = view.findViewById(R.id.walletBalance)
         availableBalance = view.findViewById(R.id.availableBalance)
         usedPercentText = view.findViewById(R.id.usedPercentText)
@@ -74,6 +73,7 @@ class walletFragment : Fragment() {
         chipGroup = view.findViewById(R.id.chipGroupFilter)
         weekCommissionText = view.findViewById(R.id.weekCommission_id)
         creditDueWeekText = view.findViewById(R.id.creditDueWeek_text)
+
         setupToolbar(view)
         setupRecyclerView(view)
         setupChips()
@@ -90,14 +90,25 @@ class walletFragment : Fragment() {
         loadOrders()
     }
 
+    // ------------------ PUBLIC FUNCTION TO REFRESH ORDERS & CREDIT ------------------
+    fun refreshOrdersAndCredit() {
+        fetchBalance()   // latest balance
+        loadOrders()     // reload orders and update credit due
+    }
 
+    // ------------------ FETCH CURRENT BALANCE ------------------
     private fun fetchBalance() {
         if (uid == null) return
 
         db.collection("users").document(uid)
             .get()
             .addOnSuccessListener { doc ->
-                currentAvailableBalance = doc.getDouble("balance") ?: creditLimit
+                currentAvailableBalance = when (val bal = doc.get("balance")) {
+                    is Double -> bal
+                    is Long -> bal.toDouble()
+                    is String -> bal.toDoubleOrNull() ?: creditLimit
+                    else -> creditLimit
+                }
                 updateBalanceUI()
             }
             .addOnFailureListener {
@@ -106,23 +117,12 @@ class walletFragment : Fragment() {
             }
     }
 
+    // ------------------ CHIP FILTERS ------------------
     private fun setupChips() {
-        val chips = listOf(chipToday, chipYesterday, chipThisWeek, chipAll)
-        chips.forEach { chip ->
+        listOf(chipToday, chipYesterday, chipThisWeek, chipAll).forEach { chip ->
             chip.setOnClickListener { filterOrders() }
         }
     }
-
-    private fun updateCreditDueWeek() {
-        val creditUsedThisWeek = orders
-            .filter { it.isThisWeek() }  // only this week's orders
-            .sumOf { order ->
-                order.totalAmount.toDoubleOrNull() ?: 0.0
-            }
-
-        creditDueWeekText.text = "RM %.2f".format(creditUsedThisWeek)
-    }
-
 
     private fun filterOrders() {
         val filtered = when {
@@ -144,46 +144,56 @@ class walletFragment : Fragment() {
 
         adapter.updateData(simpleOrders)
         updateStats(filtered)
+        updateCreditDueWeek()
     }
 
+    // ------------------ UPDATE STATS ------------------
     private fun updateStats(filteredOrders: List<OrderItem>) {
         val totalSales = filteredOrders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
         tvPeriodSaleAmount.text = "RM %.2f".format(totalSales)
 
-        // Commission example: 25%
-        val commission = totalSales * 0.25
-        tvPeriodCommissionAmount.text = "RM %.2f".format(commission)
+        tvPeriodCommissionAmount.text = "RM %.2f".format(totalSales * 0.25)
 
         val weekOrders = orders.filter { it.isThisWeek() }
         val weekCommission = weekOrders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 } * 0.25
         weekCommissionText.text = "RM %.2f".format(weekCommission)
+
         val nextMonday = getNextMonday()
         view?.findViewById<TextView>(R.id.comissionText)?.text = "Pay on $nextMonday"
     }
 
+    // ------------------ CREDIT DUE THIS WEEK ------------------
+    private fun updateCreditDueWeek() {
+        val creditUsedThisWeek = orders
+            .filter { it.isThisWeek() }
+            .sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
+
+        creditDueWeekText.text = "RM %.2f".format(creditUsedThisWeek)
+    }
+
     private fun getNextMonday(): String {
         val calendar = Calendar.getInstance()
-        // Set to next Monday
         val today = calendar.get(Calendar.DAY_OF_WEEK)
         val daysUntilMonday = (Calendar.MONDAY - today + 7) % 7
         calendar.add(Calendar.DAY_OF_YEAR, if (daysUntilMonday == 0) 7 else daysUntilMonday)
 
-        val sdf = SimpleDateFormat("EEEE, dd MMM", Locale.getDefault())
-        return sdf.format(calendar.time)
+        return SimpleDateFormat("EEEE, dd MMM", Locale.getDefault()).format(calendar.time)
     }
 
+    // ------------------ UPDATE BALANCE UI ------------------
     private fun updateBalanceUI() {
         walletBalance.text = "Credit Limit: RM %.2f".format(creditLimit)
         availableBalance.text = "RM %.2f".format(currentAvailableBalance)
 
-        val usedAmount = creditLimit - currentAvailableBalance
-        val percentUsed = ((usedAmount / creditLimit) * 100).coerceIn(0.0, 100.0)
+        val used = creditLimit - currentAvailableBalance
+        val percentUsed = ((used / creditLimit) * 100).coerceIn(0.0, 100.0)
         usedPercentText.text = "%.1f%% used".format(percentUsed)
         progressBar.progress = percentUsed.toInt()
 
         (activity as? MainActivity)?.userAvailableBalance = currentAvailableBalance
     }
 
+    // ------------------ RECYCLER VIEW ------------------
     private fun setupRecyclerView(view: View) {
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -191,6 +201,7 @@ class walletFragment : Fragment() {
         recyclerView.adapter = adapter
     }
 
+    // ------------------ LOAD ORDERS FROM FIRESTORE ------------------
     private fun loadOrders() {
         if (uid == null) return
 
@@ -199,12 +210,12 @@ class walletFragment : Fragment() {
             .get()
             .addOnSuccessListener { result ->
                 orders = result.map { doc ->
-                    val rowsList = (doc.get("rows") as? List<Map<String, Any>>)?.map { rowMap ->
+                    val rowsList = (doc.get("rows") as? List<Map<String, Any>>)?.map {
                         CartRow(
-                            number = rowMap["number"] as? String ?: "",
-                            amount = rowMap["amount"] as? String ?: "",
-                            selectedCategories = rowMap["selectedCategories"] as? List<String> ?: emptyList(),
-                            qty = (rowMap["qty"] as? Long)?.toInt() ?: 1
+                            number = it["number"] as? String ?: "",
+                            amount = it["amount"] as? String ?: "",
+                            selectedCategories = it["selectedCategories"] as? List<String> ?: emptyList(),
+                            qty = (it["qty"] as? Long)?.toInt() ?: 1
                         )
                     } ?: emptyList()
 
@@ -217,12 +228,11 @@ class walletFragment : Fragment() {
                     )
                 }.reversed()
 
-                filterOrders()
-                updateCreditDueWeek()
-
+                filterOrders()  // filterOrders updates UI + creditDueWeek
             }
             .addOnFailureListener {
                 adapter.updateData(emptyList())
+                updateCreditDueWeek()
             }
     }
 
@@ -239,7 +249,6 @@ class walletFragment : Fragment() {
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, HomeFragment())
                 .commit()
-
             requireActivity()
                 .findViewById<BottomNavigationView>(R.id.bottomNavigation)
                 .selectedItemId = R.id.nav_home

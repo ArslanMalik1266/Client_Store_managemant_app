@@ -20,8 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class BottomSheetCart(
-    private val availableBalance: Double,
-    private val onBalanceUpdated: ((newBalance: Double) -> Unit)? = null // callback to WalletFragment
+    private var availableBalance: Double
 ) : BottomSheetDialogFragment() {
 
     private lateinit var recyclerView: RecyclerView
@@ -30,7 +29,7 @@ class BottomSheetCart(
     private lateinit var totalText: TextView
     private lateinit var adapter: CartAdapter
 
-    private val uid = FirebaseAuth.getInstance().uid ?: ""
+    private val uid = FirebaseAuth.getInstance().uid!!
     private val db = FirebaseFirestore.getInstance()
 
     override fun onCreateView(
@@ -39,20 +38,10 @@ class BottomSheetCart(
     ): View {
         val view = inflater.inflate(R.layout.bottom_sheet_cart, container, false)
 
-        checkUserCart(uid)
-
         recyclerView = view.findViewById(R.id.recyclerView_cart)
         btnClear = view.findViewById(R.id.btnClearCart)
         btnProceed = view.findViewById(R.id.btnProceed)
         totalText = view.findViewById(R.id.tvTotalAmount)
-
-        CartManager.lastUserId?.let {
-            if (it != uid) {
-                CartManager.clearCart()
-            }
-        }
-        CartManager.lastUserId = uid
-
 
         setupRecyclerView()
         setupButtons()
@@ -72,6 +61,7 @@ class BottomSheetCart(
     }
 
     private fun setupButtons() {
+
         btnClear.setOnClickListener {
             CartManager.clearCart()
             adapter.notifyDataSetChanged()
@@ -79,94 +69,68 @@ class BottomSheetCart(
         }
 
         btnProceed.setOnClickListener {
+
             if (CartManager.cartItems.isEmpty()) return@setOnClickListener
 
-            val total = CartManager.cartItems.sumOf { it.totalAmount }
+            val totalBill = CartManager.cartItems.sumOf { it.totalAmount }
 
-            // Fetch latest balance before proceeding
-            db.collection("users").document(uid).get()
-                .addOnSuccessListener { doc ->
-                    val currentBalance = when (val bal = doc.get("balance")) {
-                        is Double -> bal
-                        is Long -> bal.toDouble()
-                        is String -> bal.toDoubleOrNull() ?: 0.0
-                        else -> 0.0
-                    }
+            // Check Balance
+            if (availableBalance < totalBill) {
+                btnProceed.isEnabled = false
+                btnProceed.text = "Insufficient Balance"
+                return@setOnClickListener
+            }
 
-                    if (currentBalance < total) {
-                        btnProceed.isEnabled = false
-                        btnProceed.text = "Insufficient Balance"
-                        return@addOnSuccessListener
-                    }
+            val newBalance = availableBalance - totalBill
 
-                    val finalInvoice = generateFinalInvoice()
-                    val orderItems = CartManager.cartItems.map { cart ->
-                        OrderItem(
-                            invoiceNumber = finalInvoice,
-                            status = "Completed",
-                            dateAdded = SimpleDateFormat(
-                                "dd MMM yyyy, hh:mm a",
-                                Locale.getDefault()
-                            ).format(Date()),
-                            raceDay = cart.raceDays.lastOrNull()
-                                ?: SimpleDateFormat("EEE", Locale.getDefault()).format(Date()),
-                            rows = cart.rows,
-                            productImage = cart.drawableName,
-                            productName = cart.productName,
-                            productCode = cart.productCode,
-                            hashtag = "#${System.currentTimeMillis().toString().takeLast(4)}",
-                            rmAmount = "RM 2.00",
-                            totalAmount = cart.totalAmount.toString()
-                        )
-                    }
-
-                    // Save each order to Firestore
-                    orderItems.forEach { order ->
-                        db.collection("users").document(uid)
-                            .collection("orders")
-                            .add(order)
-                    }
-
-                    // Update balance
-                    val newBalance = currentBalance - total
-                    db.collection("users").document(uid).update("balance", newBalance)
-
-                    // Notify WalletFragment
-                    onBalanceUpdated?.invoke(newBalance)
-
-                    // Clear cart and dismiss
-                    CartManager.clearCart()
-                    adapter.notifyDataSetChanged()
-                    dismiss()
-
-                    // Navigate to Orders tab
-                    requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
-                        .selectedItemId = R.id.nav_orders
+            // 1️⃣ UPDATE FIRESTORE BALANCE
+            db.collection("users").document(uid)
+                .update("balance", newBalance)
+                .addOnSuccessListener {
+                    availableBalance = newBalance
                 }
-                .addOnFailureListener { e ->
-                    btnProceed.isEnabled = true
-                    btnProceed.text = "Proceed"
-                    e.printStackTrace()
-                }
+
+            // 2️⃣ SAVE ORDERS
+            val invoice = generateFinalInvoice()
+            val time = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
+
+            CartManager.cartItems.forEach { cart ->
+                val order = OrderItem(
+                    invoiceNumber = invoice,
+                    status = "Completed",
+                    dateAdded = time,
+                    raceDay = cart.raceDays.lastOrNull()
+                        ?: SimpleDateFormat("EEE", Locale.getDefault()).format(Date()),
+                    rows = cart.rows,
+                    productImage = cart.drawableName,
+                    productName = cart.productName,
+                    productCode = cart.productCode,
+                    hashtag = "#${System.currentTimeMillis().toString().takeLast(4)}",
+                    rmAmount = "RM 2.00",
+                    totalAmount = cart.totalAmount.toString()
+                )
+
+                db.collection("users").document(uid)
+                    .collection("orders")
+                    .add(order)
+            }
+
+            // 3️⃣ CLEAR CART
+            CartManager.clearCart()
+            adapter.notifyDataSetChanged()
+
+            // Close bottom sheet
+            dismiss()
+
+            // Go to Orders Page
+            requireActivity()
+                .findViewById<BottomNavigationView>(R.id.bottomNavigation)
+                .selectedItemId = R.id.nav_orders
         }
     }
 
     private fun updateTotal() {
         val total = CartManager.cartItems.sumOf { it.totalAmount }
         totalText.text = "Total RM: %.2f".format(total)
-        validateBalance(total)
-    }
-
-    private fun validateBalance(total: Double) {
-        if (CartManager.cartItems.isEmpty()) {
-            btnProceed.isEnabled = false
-            btnProceed.text = "Cart empty"
-        }
-    }
-    private fun checkUserCart(uid: String) {
-        if (CartManager.lastUserId != uid) {
-            CartManager.clearCart()
-            CartManager.lastUserId = uid
-        }
     }
 }

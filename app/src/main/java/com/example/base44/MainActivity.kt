@@ -99,9 +99,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupToolbar() {
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_cart) {
-                BottomSheetCart(userAvailableBalance) { newBalance ->
-                    userAvailableBalance = newBalance
-                }.show(supportFragmentManager, "CartBottomSheet")
+                BottomSheetCart(userAvailableBalance)
+                    .show(supportFragmentManager, "CartBottomSheet")
                 true
             } else false
         }
@@ -183,7 +182,8 @@ class MainActivity : AppCompatActivity() {
                     auth.signOut()
                     try {
                         googleSignInClient.signOut()
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) {
+                    }
                     session.logout()
                     startActivity(Intent(this, login::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

@@ -12,8 +12,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:backgroundTint="@color/white">
+        android:layout_height="match_parent">
         
         <TextView
             android:id="@+id/result_ItemHeading"
@@ -21,7 +20,7 @@
             android:layout_height="wrap_content"
             android:text="9Lotto"
             android:fontFamily="@font/inter_bold"
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:padding="4dp"
             android:background="@color/light_green"
             app:layout_constraintStart_toStartOf="parent"
