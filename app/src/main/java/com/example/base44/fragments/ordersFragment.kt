@@ -49,24 +49,22 @@ class ordersFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_orders, container, false)
 
-        // Toolbar
         setupToolbar(view)
 
-        // RecyclerView
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
         adapter = OrdersAdapter(orders)
         recyclerView.adapter = adapter
 
-        // Stats TextViews
         tvOrdersCount = view.findViewById(R.id.tvOrdersCount)
         tvTotalSalesAmount = view.findViewById(R.id.tvTotalSalesAmount)
         totalOrdersTv = view.findViewById(R.id.totalOrdersTv)
 
-        // Chips
         setupChips(view)
 
-        // Load orders from Firestore
+        // Default selection must be BEFORE loading orders
+        chipToday.isChecked = true
+
         loadOrdersFromFirestore()
 
         return view
@@ -90,7 +88,8 @@ class ordersFragment : Fragment() {
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, HomeFragment())
                 .commit()
-            requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigation)
+            requireActivity()
+                .findViewById<BottomNavigationView>(R.id.bottomNavigation)
                 .selectedItemId = R.id.nav_home
         }
 
@@ -123,18 +122,18 @@ class ordersFragment : Fragment() {
             .get()
             .addOnSuccessListener { result ->
                 orders.clear()
+
                 result.forEach { doc ->
-                    // Map rows
                     val rowsList = (doc.get("rows") as? List<Map<String, Any>>)?.map { rowMap ->
                         CartRow(
                             number = rowMap["number"] as? String ?: "",
                             amount = rowMap["amount"] as? String ?: "",
-                            selectedCategories = rowMap["selectedCategories"] as? List<String> ?: emptyList(),
+                            selectedCategories = rowMap["selectedCategories"] as? List<String>
+                                ?: emptyList(),
                             qty = (rowMap["qty"] as? Long)?.toInt() ?: 1
                         )
                     } ?: emptyList()
 
-                    // Map order
                     val order = OrderItem(
                         invoiceNumber = doc.getString("invoiceNumber") ?: "",
                         dateAdded = doc.getString("dateAdded") ?: "",
@@ -149,11 +148,16 @@ class ordersFragment : Fragment() {
                     orders.add(order)
                 }
 
-                adapter.updateData(orders)
-                updateStats(orders)
+                // APPLY default filter NOW
+                filterOrders()
+
             }
             .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Failed to load orders: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Failed to load orders: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
@@ -162,16 +166,9 @@ class ordersFragment : Fragment() {
             chipToday.isChecked -> orders.filter { it.isToday() }
             chipYesterday.isChecked -> orders.filter { it.isYesterday() }
             chipThisWeek.isChecked -> orders.filter { it.isThisWeek() }
-            chipAll.isChecked -> orders // no filter
+            chipAll.isChecked -> orders
             else -> orders
         }
-
-        // If you want winner chip filtering uncomment
-//        if (chipWinner.isChecked) {
-//            filtered = filtered.filter { order ->
-//                order.rows.any { it.isWinner }
-//            }
-//        }
 
         adapter.updateData(filtered)
         updateStats(filtered)
@@ -180,6 +177,7 @@ class ordersFragment : Fragment() {
     private fun updateStats(orderList: List<OrderItem>) {
         tvOrdersCount.text = orderList.size.toString()
         totalOrdersTv.text = "Total Check Orders = ${orders.size}"
+
         val total = orderList.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
         tvTotalSalesAmount.text = "RM %.2f".format(total)
     }

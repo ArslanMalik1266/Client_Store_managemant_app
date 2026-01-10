@@ -78,6 +78,8 @@ class walletFragment : Fragment() {
         setupRecyclerView(view)
         setupChips()
 
+        chipAll.isChecked = true
+
         return view
     }
 

@@ -8,12 +8,10 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.base44.adaptor.CartAdapter
 import com.example.base44.adaptor.utils.generateFinalInvoice
 import com.example.base44.dataClass.CartManager
 import com.example.base44.dataClass.OrderItem
-import com.example.base44.dataClass.add_to_cart_item
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -41,10 +39,20 @@ class BottomSheetCart(
     ): View {
         val view = inflater.inflate(R.layout.bottom_sheet_cart, container, false)
 
+        checkUserCart(uid)
+
         recyclerView = view.findViewById(R.id.recyclerView_cart)
         btnClear = view.findViewById(R.id.btnClearCart)
         btnProceed = view.findViewById(R.id.btnProceed)
         totalText = view.findViewById(R.id.tvTotalAmount)
+
+        CartManager.lastUserId?.let {
+            if (it != uid) {
+                CartManager.clearCart()
+            }
+        }
+        CartManager.lastUserId = uid
+
 
         setupRecyclerView()
         setupButtons()
@@ -78,7 +86,12 @@ class BottomSheetCart(
             // Fetch latest balance before proceeding
             db.collection("users").document(uid).get()
                 .addOnSuccessListener { doc ->
-                    val currentBalance = doc.getDouble("balance") ?: 0.0
+                    val currentBalance = when (val bal = doc.get("balance")) {
+                        is Double -> bal
+                        is Long -> bal.toDouble()
+                        is String -> bal.toDoubleOrNull() ?: 0.0
+                        else -> 0.0
+                    }
 
                     if (currentBalance < total) {
                         btnProceed.isEnabled = false
@@ -98,7 +111,7 @@ class BottomSheetCart(
                             raceDay = cart.raceDays.lastOrNull()
                                 ?: SimpleDateFormat("EEE", Locale.getDefault()).format(Date()),
                             rows = cart.rows,
-                            productImage = cart.drawableName, // now accepts URI
+                            productImage = cart.drawableName,
                             productName = cart.productName,
                             productCode = cart.productCode,
                             hashtag = "#${System.currentTimeMillis().toString().takeLast(4)}",
@@ -147,7 +160,13 @@ class BottomSheetCart(
     private fun validateBalance(total: Double) {
         if (CartManager.cartItems.isEmpty()) {
             btnProceed.isEnabled = false
-            btnProceed.text = "Cart Emp"
+            btnProceed.text = "Cart empty"
+        }
+    }
+    private fun checkUserCart(uid: String) {
+        if (CartManager.lastUserId != uid) {
+            CartManager.clearCart()
+            CartManager.lastUserId = uid
         }
     }
 }

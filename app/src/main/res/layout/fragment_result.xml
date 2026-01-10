@@ -15,10 +15,18 @@
         android:elevation="10dp"
         app:navigationIcon="@drawable/back_arrow"
         app:title="Draw Results"
+        app:menu="@menu/menu_results"
         app:titleCentered="true"
         app:titleTextAppearance="@style/Toolbar.Title.Bold" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerResults"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="60dp" />
+
     <TextView
+        android:id="@+id/empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

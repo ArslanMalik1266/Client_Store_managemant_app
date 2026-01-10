@@ -4,6 +4,8 @@ object CartManager {
 
     val cartItems = mutableListOf<add_to_cart_item>()
 
+    var lastUserId: String? = null
+
     fun addItem(item: add_to_cart_item) {
         cartItems.add(0, item)
     }

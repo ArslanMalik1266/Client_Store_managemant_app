@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="14dp"
+    android:background="@color/white"
+    android:layout_margin="8dp"
+    android:elevation="4dp"
+    android:clipToPadding="false">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:backgroundTint="@color/white">
+        
+        <TextView
+            android:id="@+id/result_ItemHeading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="9Lotto"
+            android:fontFamily="@font/inter_bold"
+            android:textSize="16dp"
+            android:padding="4dp"
+            android:background="@color/light_green"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/date_resultItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="30 Dec 2025 (tue) 1230/2025"
+            android:textSize="10sp"
+            android:textColor="@color/green"
+            app:layout_constraintStart_toStartOf="@id/result_ItemHeading"
+            app:layout_constraintTop_toBottomOf="@id/result_ItemHeading"
+            android:background="@color/light_green"
+            android:padding="4dp"/>
+
+        <TextView
+            android:id="@+id/result_1stPrize_heading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/green"
+            android:fontFamily="@font/inter_medium"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="1st Prize"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/date_resultItem" />
+
+        <TextView
+            android:id="@+id/result_1stPrize_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/green"
+            android:fontFamily="@font/inter_semibold"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="2270"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/result_1stPrize_heading"
+            app:layout_constraintTop_toBottomOf="@id/result_1stPrize_heading" />
+
+        <TextView
+            android:id="@+id/result_2nd_3rd_heading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/blue"
+            android:fontFamily="@font/inter_medium"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="2nd &amp; 3rd Prize"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/result_1stPrize_number" />
+
+        <TextView
+            android:id="@+id/result_2nd_number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="1543"
+            android:textSize="12sp"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/result_3nd_number"
+            app:layout_constraintStart_toStartOf="@id/result_2nd_3rd_heading"
+            app:layout_constraintTop_toBottomOf="@id/result_2nd_3rd_heading" />
+
+        <TextView
+            android:id="@+id/result_3nd_number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:textSize="12sp"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toEndOf="@id/result_2nd_3rd_heading"
+            app:layout_constraintStart_toEndOf="@id/result_2nd_number"
+            app:layout_constraintTop_toBottomOf="@id/result_2nd_3rd_heading" />
+        <TextView
+            android:id="@+id/result_special_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Special"
+            android:textSize="12sp"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/white"
+            android:background="@color/golden"
+            android:gravity="center_horizontal"
+            app:layout_constraintStart_toStartOf="@id/result_2nd_number"
+            app:layout_constraintTop_toBottomOf="@id/result_2nd_number"
+            android:padding="4dp"
+            />
+        <TextView
+            android:id="@+id/special_nmbr_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="1543"
+            android:textSize="12sp"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/special_nmbr_2"
+            app:layout_constraintStart_toStartOf="@id/result_special_tv"
+            app:layout_constraintTop_toBottomOf="@id/result_special_tv" />
+
+        <TextView
+            android:id="@+id/special_nmbr_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:textSize="12sp"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toEndOf="@id/result_special_tv"
+            app:layout_constraintStart_toEndOf="@id/special_nmbr_1"
+            app:layout_constraintTop_toBottomOf="@id/result_special_tv" />
+
+        <TextView
+            android:id="@+id/special_nmbr_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="1543"
+            android:textSize="12sp"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/special_nmbr_4"
+            app:layout_constraintStart_toStartOf="@id/special_nmbr_1"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_1" />
+
+        <TextView
+            android:id="@+id/special_nmbr_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toEndOf="@id/special_nmbr_2"
+            app:layout_constraintStart_toEndOf="@id/special_nmbr_3"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_2" />
+
+        <TextView
+            android:id="@+id/special_nmbr_5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="1543"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/special_nmbr_6"
+            app:layout_constraintStart_toStartOf="@id/special_nmbr_3"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_3" />
+
+        <TextView
+            android:id="@+id/special_nmbr_6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toEndOf="@id/special_nmbr_4"
+            app:layout_constraintStart_toEndOf="@id/special_nmbr_5"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_4" />
+
+        <TextView
+            android:id="@+id/special_nmbr_7"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="1543"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/special_nmbr_8"
+            app:layout_constraintStart_toStartOf="@id/special_nmbr_5"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_5" />
+
+        <TextView
+            android:id="@+id/special_nmbr_8"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toEndOf="@id/special_nmbr_6"
+            app:layout_constraintStart_toEndOf="@id/special_nmbr_7"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_6" />
+
+        <TextView
+            android:id="@+id/special_nmbr_9"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="1543"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/special_nmbr_10"
+            app:layout_constraintStart_toStartOf="@id/special_nmbr_7"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_7" />
+
+        <TextView
+            android:id="@+id/special_nmbr_10"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@id/special_nmbr_8"
+            app:layout_constraintStart_toEndOf="@id/special_nmbr_9"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_8" />
+
+        <TextView
+            android:id="@+id/result_consolation_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Consolation"
+            android:textSize="12sp"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/white"
+            android:background="@color/purple"
+            android:gravity="center_horizontal"
+            app:layout_constraintStart_toStartOf="@id/special_nmbr_9"
+            app:layout_constraintTop_toBottomOf="@id/special_nmbr_9"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:padding="4dp"
+            />
+        <TextView
+            android:id="@+id/consolation_number_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="1543"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/consolation_number_2"
+            app:layout_constraintStart_toStartOf="@id/result_consolation_tv"
+            app:layout_constraintTop_toBottomOf="@id/result_consolation_tv" />
+
+        <TextView
+            android:id="@+id/consolation_number_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@id/result_consolation_tv"
+            app:layout_constraintStart_toEndOf="@id/consolation_number_1"
+            app:layout_constraintTop_toBottomOf="@id/result_consolation_tv" />
+
+        <TextView
+            android:id="@+id/consolation_number_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="1543"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/consolation_number_4"
+            app:layout_constraintStart_toStartOf="@id/consolation_number_1"
+            app:layout_constraintTop_toBottomOf="@id/consolation_number_1" />
+
+        <TextView
+            android:id="@+id/consolation_number_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@id/consolation_number_2"
+            app:layout_constraintStart_toEndOf="@id/consolation_number_3"
+            app:layout_constraintTop_toBottomOf="@id/consolation_number_2" />
+        <TextView
+            android:id="@+id/consolation_number_5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="1543"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/consolation_number_6"
+            app:layout_constraintStart_toStartOf="@id/consolation_number_3"
+            app:layout_constraintTop_toBottomOf="@id/consolation_number_3" />
+
+        <TextView
+            android:id="@+id/consolation_number_6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@id/consolation_number_4"
+            app:layout_constraintStart_toEndOf="@id/consolation_number_5"
+            app:layout_constraintTop_toBottomOf="@id/consolation_number_4" />
+
+        <TextView
+            android:id="@+id/consolation_number_7"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="1543"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/consolation_number_8"
+            app:layout_constraintStart_toStartOf="@id/consolation_number_5"
+            app:layout_constraintTop_toBottomOf="@id/consolation_number_5" />
+
+        <TextView
+            android:id="@+id/consolation_number_8"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@id/consolation_number_6"
+            app:layout_constraintStart_toEndOf="@id/consolation_number_7"
+            app:layout_constraintTop_toBottomOf="@id/consolation_number_6" />
+
+        <TextView
+            android:id="@+id/consolation_number_9"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:text="1543"
+            android:fontFamily="@font/inter_semibold"
+            app:layout_constraintEnd_toStartOf="@id/consolation_number_10"
+            app:layout_constraintStart_toStartOf="@id/consolation_number_7"
+            app:layout_constraintTop_toBottomOf="@id/consolation_number_7" />
+
+        <TextView
+            android:id="@+id/consolation_number_10"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:text="0745"
+            android:fontFamily="@font/inter_semibold"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@id/consolation_number_8"
+            app:layout_constraintStart_toEndOf="@id/consolation_number_9"
+            app:layout_constraintTop_toBottomOf="@id/consolation_number_8" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+</androidx.cardview.widget.CardView>
