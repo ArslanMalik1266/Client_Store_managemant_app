@@ -86,12 +86,31 @@ class MainActivity : AppCompatActivity() {
         val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
 
         auth.currentUser?.uid?.let { uid ->
-            db.collection("users").document(uid).get()
-                .addOnSuccessListener { doc ->
-                    tvDrawerUsername.text = doc.getString("username") ?: "User"
-                }
-                .addOnFailureListener {
-                    tvDrawerUsername.text = "User"
+            db.collection("users").document(uid)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) return@addSnapshotListener
+                    if (snapshot != null && snapshot.exists()) {
+                        val canWork = snapshot.getBoolean("canWork") ?: true
+                        if (!canWork) {
+                            // Account Suspended
+                            auth.signOut()
+                            session.logout()
+                            val intent = Intent(this, login::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            intent.putExtra("suspended", true)
+                            startActivity(intent)
+                            finish()
+                            return@addSnapshotListener
+                        }
+
+                        tvDrawerUsername.text = snapshot.getString("username") ?: "User"
+                        userAvailableBalance = when (val bal = snapshot.get("walletBalance")) {
+                            is Double -> bal
+                            is Long -> bal.toDouble()
+                            is String -> bal.toDoubleOrNull() ?: 0.0
+                            else -> 0.0
+                        }
+                    }
                 }
         }
     }

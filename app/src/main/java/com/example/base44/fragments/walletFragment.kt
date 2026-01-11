@@ -96,24 +96,28 @@ class walletFragment : Fragment() {
         loadOrders()     // reload orders and update credit due
     }
 
-    // ------------------ FETCH CURRENT BALANCE ------------------
+    // ------------------ FETCH CURRENT BALANCE (REALTIME) ------------------
     private fun fetchBalance() {
         if (uid == null) return
 
         db.collection("users").document(uid)
-            .get()
-            .addOnSuccessListener { doc ->
-                currentAvailableBalance = when (val bal = doc.get("balance")) {
-                    is Double -> bal
-                    is Long -> bal.toDouble()
-                    is String -> bal.toDoubleOrNull() ?: creditLimit
-                    else -> creditLimit
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+                if (snapshot != null && snapshot.exists()) {
+                    currentAvailableBalance = when (val bal = snapshot.get("walletBalance")) {
+                        is Double -> bal
+                        is Long -> bal.toDouble()
+                        is String -> bal.toDoubleOrNull() ?: 0.0
+                        else -> 0.0
+                    }
+                    creditLimit = when (val lim = snapshot.get("creditLimit")) {
+                        is Double -> lim
+                        is Long -> lim.toDouble()
+                        is String -> lim.toDoubleOrNull() ?: 5000.0
+                        else -> 5000.0
+                    }
+                    updateBalanceUI()
                 }
-                updateBalanceUI()
-            }
-            .addOnFailureListener {
-                currentAvailableBalance = creditLimit
-                updateBalanceUI()
             }
     }
 
@@ -222,11 +226,12 @@ class walletFragment : Fragment() {
                     OrderItem(
                         invoiceNumber = doc.getString("invoiceNumber") ?: "",
                         dateAdded = doc.getString("dateAdded") ?: "",
+                        timestamp = doc.getLong("timestamp") ?: 0L,
                         totalAmount = doc.getString("totalAmount") ?: "0",
                         status = doc.getString("status") ?: "",
                         rows = rowsList
                     )
-                }.reversed()
+                }.sortedByDescending { it.timestamp }
 
                 filterOrders()  // filterOrders updates UI + creditDueWeek
             }

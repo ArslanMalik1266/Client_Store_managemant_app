@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/navAdminUsers"
+            android:icon="@drawable/lists"
+            android:title="Admin Users" />
+        <item
+            android:id="@+id/navAdminWinning"
+            android:icon="@drawable/trophy"
+            android:title="Admin Winning" />
+        <item
+            android:id="@+id/navAdminDrawResult"
+            android:icon="@drawable/trophy"
+            android:title="Admin Draw Result" />
+        <item
+            android:id="@+id/navAdminCommission"
+            android:icon="@drawable/baseline_attach_money_24"
+            android:title="Admin Commission" />
+        <item
+            android:id="@+id/navAdminPayments"
+            android:icon="@drawable/baseline_attach_money_24"
+            android:title="Admin Payments" />
+        <item
+            android:id="@+id/navAdminSalesReports"
+            android:icon="@drawable/lists"
+            android:title="Admin Sales Reports" />
+    </group>
+</menu>

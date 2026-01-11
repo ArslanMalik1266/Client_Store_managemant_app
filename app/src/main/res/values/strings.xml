@@ -5,4 +5,10 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="default_web_client_id">106190127236-ep5ld0j7sejo6oiuvbc1v38ur3cig8gv.apps.googleusercontent.com</string>
+
+    <string-array name="user_status_options">
+        <item>All</item>
+        <item>Active</item>
+        <item>Suspended</item>
+    </string-array>
 </resources>

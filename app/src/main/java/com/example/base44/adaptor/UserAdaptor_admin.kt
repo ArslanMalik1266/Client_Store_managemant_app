@@ -9,15 +9,24 @@ import com.example.base44.R
 import com.example.base44.dataClass.User_for_admin
 
 class UserAdapte_admin(
-    private val users: List<User_for_admin>,
+    private var users: List<User_for_admin>,
     private val onEditCreditsClick: (User_for_admin) -> Unit,
     private val onItemClick: (User_for_admin) -> Unit
 ) : RecyclerView.Adapter<UserAdapte_admin.UserViewHolder>() {
 
+    fun updateList(newList: List<User_for_admin>) {
+        this.users = newList
+        notifyDataSetChanged()
+    }
+
     inner class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvName: TextView = itemView.findViewById(R.id.tvUserName)
         val tvEmail: TextView = itemView.findViewById(R.id.tvUserEmail)
-        val btnEdit: TextView = itemView.findViewById(R.id.btnEditCredits)
+        val tvInitial: TextView = itemView.findViewById(R.id.tvUserInitial)
+        val tvBalance: TextView = itemView.findViewById(R.id.itemTvBalance)
+        val tvLimit: TextView = itemView.findViewById(R.id.itemTvWalletLimit)
+        val tvSales: TextView = itemView.findViewById(R.id.itemTvTotalSales)
+        val tvStatusTag: TextView = itemView.findViewById(R.id.tvStatusTag)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -29,9 +38,14 @@ class UserAdapte_admin(
         val user = users[position]
         holder.tvName.text = user.fullName
         holder.tvEmail.text = user.email
+        holder.tvInitial.text = user.fullName.firstOrNull()?.uppercase() ?: "U"
+        holder.tvBalance.text = "RM %.2f".format(user.currentBalance)
+        holder.tvLimit.text = "RM %.2f".format(user.creditLimit)
+        holder.tvSales.text = "RM %.2f".format(user.totalSales)
+
+        holder.tvStatusTag.visibility = if (user.canWork) View.GONE else View.VISIBLE
 
         holder.itemView.setOnClickListener { onItemClick(user) }
-        holder.btnEdit.setOnClickListener { onEditCreditsClick(user) }
     }
 
     override fun getItemCount(): Int = users.size

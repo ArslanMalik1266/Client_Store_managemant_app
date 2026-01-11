@@ -4,6 +4,7 @@ data class OrderItem(
     val invoiceNumber: String = "",
     val status: String = "",
     val dateAdded: String = "",
+    val timestamp: Long = System.currentTimeMillis(),
     val raceDay: String = "",
     val productImage: String = "",
     val productName: String = "",

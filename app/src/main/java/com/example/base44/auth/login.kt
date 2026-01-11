@@ -40,6 +40,10 @@ class login : AppCompatActivity() {
         tvSignup = findViewById(R.id.tvSignup)
         session = SessionManager(this)
 
+        if (intent.getBooleanExtra("suspended", false)) {
+            Toast.makeText(this, "Account Suspended", Toast.LENGTH_LONG).show()
+        }
+
         if (session.isLoggedIn()) {
             when (session.getRole()) {
                 "admin" -> startActivity(Intent(this, admin_Dashboard::class.java))
@@ -79,13 +83,31 @@ class login : AppCompatActivity() {
                             finish()
                             return@addOnCompleteListener
                         }
-                        session.saveLogin("user")
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.flags =
-                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                        Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
-                        finish()
+
+                        val userId = auth.currentUser?.uid
+                        if (userId != null) {
+                            com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users")
+                                .document(userId)
+                                .get()
+                                .addOnSuccessListener { document ->
+                                    val canWork = document.getBoolean("canWork") ?: true
+                                    if (!canWork) {
+                                        auth.signOut()
+                                        session.logout()
+                                        Toast.makeText(this, "Account Suspended", Toast.LENGTH_LONG).show()
+                                    } else {
+                                        session.saveLogin("user")
+                                        val intent = Intent(this, MainActivity::class.java)
+                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                        startActivity(intent)
+                                        Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
+                                        finish()
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(this, "Failed to check account status", Toast.LENGTH_SHORT).show()
+                                }
+                        }
                     } else {
                         Toast.makeText(this, task.exception?.message, Toast.LENGTH_SHORT).show()
                     }

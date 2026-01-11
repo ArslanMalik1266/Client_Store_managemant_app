@@ -137,6 +137,7 @@ class ordersFragment : Fragment() {
                     val order = OrderItem(
                         invoiceNumber = doc.getString("invoiceNumber") ?: "",
                         dateAdded = doc.getString("dateAdded") ?: "",
+                        timestamp = doc.getLong("timestamp") ?: 0L,
                         totalAmount = doc.getString("totalAmount") ?: "0",
                         status = doc.getString("status") ?: "",
                         productImage = doc.getString("productImage") ?: "",
@@ -147,6 +148,9 @@ class ordersFragment : Fragment() {
 
                     orders.add(order)
                 }
+
+                // Sort orders by timestamp descending (latest first)
+                orders.sortByDescending { it.timestamp }
 
                 // APPLY default filter NOW
                 filterOrders()
@@ -170,9 +174,12 @@ class ordersFragment : Fragment() {
             else -> orders
         }
 
-        adapter.updateData(filtered)
-        updateStats(filtered)
+        val filteredSorted = filtered.sortedByDescending { it.timestamp }
+
+        adapter.updateData(filteredSorted)
+        updateStats(filteredSorted)
     }
+
 
     private fun updateStats(orderList: List<OrderItem>) {
         tvOrdersCount.text = orderList.size.toString()

@@ -14,11 +14,10 @@ import com.example.base44.dataClass.CartRow
 import com.example.base44.dataClass.add_to_cart_item
 
 class CartAdapter(
-    private val cartList: List<add_to_cart_item>,
+    private var cartList: MutableList<add_to_cart_item>,
     private val onDeleteClick: ((position: Int) -> Unit)? = null
 ) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
-    private val cartItems = cartList.toMutableList()
 
     inner class CartViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val productName: TextView = itemView.findViewById(R.id.cart_item_name)
@@ -67,13 +66,13 @@ class CartAdapter(
     override fun getItemCount(): Int = cartList.size
 
     fun updateData(newList: List<add_to_cart_item>) {
-        cartItems.clear()
-        cartItems.addAll(newList)
+        cartList.clear()
+        cartList.addAll(newList)
         notifyDataSetChanged()
     }
 
     fun addItemAtTop(item: add_to_cart_item, recyclerView: RecyclerView) {
-        cartItems.add(0, item)       // add to top
+        cartList.add(0, item)       // add to top
         notifyItemInserted(0)         // notify adapter
         recyclerView.scrollToPosition(0) // scroll to top
     }

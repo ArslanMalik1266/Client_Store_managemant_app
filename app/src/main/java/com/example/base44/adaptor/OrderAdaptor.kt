@@ -52,8 +52,8 @@ class OrdersAdapter(
             item.productImage, "drawable", holder.itemView.context.packageName
         )
         holder.productImage.setImageResource(resId)
-
-
+        
+        holder.productName.text = item.productName
         holder.productCode.text = item.productCode
         holder.totalLabel.text = item.totalLabel
         holder.totalAmount.text = item.totalAmount
@@ -64,7 +64,7 @@ class OrdersAdapter(
     override fun getItemCount(): Int = orderList.size
 
     fun updateData(newList: List<OrderItem>) {
-        orderList = newList
+        this.orderList = newList
         notifyDataSetChanged()
     }
 }
