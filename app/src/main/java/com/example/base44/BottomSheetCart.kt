@@ -14,8 +14,6 @@ import com.example.base44.dataClass.CartManager
 import com.example.base44.dataClass.OrderItem
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,9 +27,8 @@ class BottomSheetCart(
     private lateinit var totalText: TextView
     private lateinit var adapter: CartAdapter
 
-    private val uid = FirebaseAuth.getInstance().uid!!
-    private val db = FirebaseFirestore.getInstance()
-
+    private val uid = "" // Placeholder for user ID from session/token
+    
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -80,62 +77,16 @@ class BottomSheetCart(
                 return@setOnClickListener
             }
 
-            val newBalance = availableBalance - totalBill
-
-            // 1️⃣ UPDATE FIRESTORE BALANCE AND TOTAL SALES
-            db.collection("users").document(uid).get().addOnSuccessListener { doc ->
-                val currentTotalSales = when (val sales = doc.get("totalSales")) {
-                    is Double -> sales
-                    is Long -> sales.toDouble()
-                    else -> 0.0
-                }
-                val updatedTotalSales = currentTotalSales + totalBill
-
-                val updates = hashMapOf<String, Any>(
-                    "walletBalance" to newBalance,
-                    "totalSales" to updatedTotalSales
-                )
-
-                db.collection("users").document(uid)
-                    .update(updates)
-                    .addOnSuccessListener {
-                        availableBalance = newBalance
-                        // Balance update successful, now save orders and clear cart
-                        saveOrdersAndFinalize(totalBill)
-                    }
-                    .addOnFailureListener { e ->
-                        android.widget.Toast.makeText(requireContext(), "Error updating balance: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
-                    }
-            }
+            // TODO: Call API to place order and update balance
+            // For now, simulate success:
+            saveOrdersAndFinalize(totalBill)
         }
     }
 
     private fun saveOrdersAndFinalize(totalBill: Double) {
-        val invoice = generateFinalInvoice()
-        val time = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
-
-        CartManager.cartItems.forEach { cart ->
-            val order = OrderItem(
-                invoiceNumber = invoice,
-                status = "Completed",
-                dateAdded = time,
-                timestamp = System.currentTimeMillis(),
-                raceDay = cart.raceDays.lastOrNull()
-                    ?: SimpleDateFormat("EEE", Locale.getDefault()).format(Date()),
-                rows = cart.rows,
-                productImage = cart.drawableName,
-                productName = cart.productName,
-                productCode = cart.productCode,
-                hashtag = "#${System.currentTimeMillis().toString().takeLast(4)}",
-                rmAmount = "RM 2.00",
-                totalAmount = cart.totalAmount.toString()
-            )
-
-            db.collection("users").document(uid)
-                .collection("orders")
-                .add(order)
-        }
-
+        // In the future, this data will be sent to the server via Retrofit
+        // and the server will return the invoice/status details.
+        
         // 3️⃣ CLEAR CART
         CartManager.clearCart()
         adapter.notifyDataSetChanged()

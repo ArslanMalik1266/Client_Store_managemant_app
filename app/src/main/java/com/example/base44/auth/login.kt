@@ -11,11 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.base44.MainActivity
 import com.example.base44.R
 import com.example.base44.adaptor.utils.SessionManager
-import com.example.base44.admin.admin_Dashboard
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
+import com.example.base44.dataClass.api.AuthResponse
+import com.example.base44.dataClass.api.LoginRequest
+import com.example.base44.network.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class login : AppCompatActivity() {
 
@@ -24,7 +25,6 @@ class login : AppCompatActivity() {
     private lateinit var btnLogin: Button
     private lateinit var btnGoogleLogin: LinearLayout
     private lateinit var tvSignup: TextView
-    private lateinit var auth: FirebaseAuth
     private lateinit var session: SessionManager
 
 
@@ -32,7 +32,7 @@ class login : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        auth = FirebaseAuth.getInstance()
+        
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
         btnLogin = findViewById(R.id.btnLogin)
@@ -45,15 +45,10 @@ class login : AppCompatActivity() {
         }
 
         if (session.isLoggedIn()) {
-            when (session.getRole()) {
-                "admin" -> startActivity(Intent(this, admin_Dashboard::class.java))
-                "user" -> startActivity(Intent(this, MainActivity::class.java))
-            }
+            startActivity(Intent(this, MainActivity::class.java))
             finish()
             return
         }
-
-
 
         tvSignup.setOnClickListener {
             val intent = Intent(this, signUp::class.java)
@@ -71,49 +66,62 @@ class login : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        if (email == "admin123@admin.com") {
-                            session.saveLogin("admin")
-                            val intent = Intent(this, admin_Dashboard::class.java)
+            btnLogin.isEnabled = false
+            val loginRequest = LoginRequest(email, password)
+            RetrofitClient.instance.login(loginRequest).enqueue(object : Callback<AuthResponse> {
+                override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
+                    btnLogin.isEnabled = true
+                    if (response.isSuccessful) {
+                        val authResponse = response.body()
+                        if (authResponse?.status == "success") {
+                            val user = authResponse.user
+                            session.saveLogin(
+                                role = user?.role ?: "user",
+                                token = authResponse.token,
+                                username = user?.fullName,
+                                email = user?.email
+                            )
+                            val intent = Intent(this@login, MainActivity::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
-                            Toast.makeText(this, "Admin login successful", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@login, "Login successful", Toast.LENGTH_SHORT).show()
                             finish()
-                            return@addOnCompleteListener
-                        }
-
-                        val userId = auth.currentUser?.uid
-                        if (userId != null) {
-                            com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users")
-                                .document(userId)
-                                .get()
-                                .addOnSuccessListener { document ->
-                                    val canWork = document.getBoolean("canWork") ?: true
-                                    if (!canWork) {
-                                        auth.signOut()
-                                        session.logout()
-                                        Toast.makeText(this, "Account Suspended", Toast.LENGTH_LONG).show()
-                                    } else {
-                                        session.saveLogin("user")
-                                        val intent = Intent(this, MainActivity::class.java)
-                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                        startActivity(intent)
-                                        Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
-                                        finish()
-                                    }
-                                }
-                                .addOnFailureListener {
-                                    Toast.makeText(this, "Failed to check account status", Toast.LENGTH_SHORT).show()
-                                }
+                        } else {
+                            Toast.makeText(this@login, authResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Toast.makeText(this, task.exception?.message, Toast.LENGTH_SHORT).show()
+                        val errorBody = response.errorBody()?.string() ?: "Unknown Error"
+                        
+                        // Check if error is related to verification
+                        if (errorBody.contains("verify", ignoreCase = true)) {
+                            android.app.AlertDialog.Builder(this@login)
+                                .setTitle("Verification Required")
+                                .setMessage("Please verify your email address to login.\nReason: $errorBody")
+                                .setPositiveButton("Verify Now") { _, _ ->
+                                    val intent = Intent(this@login, VerificationActivity::class.java)
+                                    intent.putExtra("EMAIL", email)
+                                    // Token might not be available here, but verify endpoint might work with just email/code or we prompt re-signup?
+                                    // Assuming VerificationActivity can handle just email if needed, or user will re-request code
+                                    startActivity(intent)
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        } else {
+                            android.app.AlertDialog.Builder(this@login)
+                                .setTitle("Login Failed")
+                                .setMessage("Code: ${response.code()}\nReason: $errorBody")
+                                .setPositiveButton("OK", null)
+                                .show()
+                        }
                     }
                 }
-        }
 
+                override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                    btnLogin.isEnabled = true
+                    Toast.makeText(this@login, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
     }
 
 }

@@ -19,10 +19,7 @@ import com.example.base44.dataClass.OrderItem
 import com.example.base44.dataClass.isThisWeek
 import com.example.base44.dataClass.isToday
 import com.example.base44.dataClass.isYesterday
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.chip.Chip
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class ordersFragment : Fragment() {
 
@@ -40,9 +37,8 @@ class ordersFragment : Fragment() {
     private lateinit var chipAll: Chip
     private lateinit var chipWinner: Chip
 
-    private val uid = FirebaseAuth.getInstance().uid ?: ""
-    private val db = FirebaseFirestore.getInstance()
-
+    private val uid = "" // Placeholder
+    
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -65,11 +61,11 @@ class ordersFragment : Fragment() {
         // Default selection must be BEFORE loading orders
         chipToday.isChecked = true
 
-        loadOrdersFromFirestore()
+        loadOrdersFromApi()
 
         return view
     }
-
+    
     override fun onResume() {
         super.onResume()
         hideToolbarAndDrawer()
@@ -89,7 +85,7 @@ class ordersFragment : Fragment() {
                 .replace(R.id.fragment_container, HomeFragment())
                 .commit()
             requireActivity()
-                .findViewById<BottomNavigationView>(R.id.bottomNavigation)
+                .findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation)
                 .selectedItemId = R.id.nav_home
         }
 
@@ -114,55 +110,10 @@ class ordersFragment : Fragment() {
         }
     }
 
-    private fun loadOrdersFromFirestore() {
-        if (uid.isEmpty()) return
-
-        db.collection("users").document(uid)
-            .collection("orders")
-            .get()
-            .addOnSuccessListener { result ->
-                orders.clear()
-
-                result.forEach { doc ->
-                    val rowsList = (doc.get("rows") as? List<Map<String, Any>>)?.map { rowMap ->
-                        CartRow(
-                            number = rowMap["number"] as? String ?: "",
-                            amount = rowMap["amount"] as? String ?: "",
-                            selectedCategories = rowMap["selectedCategories"] as? List<String>
-                                ?: emptyList(),
-                            qty = (rowMap["qty"] as? Long)?.toInt() ?: 1
-                        )
-                    } ?: emptyList()
-
-                    val order = OrderItem(
-                        invoiceNumber = doc.getString("invoiceNumber") ?: "",
-                        dateAdded = doc.getString("dateAdded") ?: "",
-                        timestamp = doc.getLong("timestamp") ?: 0L,
-                        totalAmount = doc.getString("totalAmount") ?: "0",
-                        status = doc.getString("status") ?: "",
-                        productImage = doc.getString("productImage") ?: "",
-                        productName = doc.getString("productName") ?: "",
-                        productCode = doc.getString("productCode") ?: "",
-                        rows = rowsList
-                    )
-
-                    orders.add(order)
-                }
-
-                // Sort orders by timestamp descending (latest first)
-                orders.sortByDescending { it.timestamp }
-
-                // APPLY default filter NOW
-                filterOrders()
-
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(
-                    requireContext(),
-                    "Failed to load orders: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+    private fun loadOrdersFromApi() {
+        // TODO: Load orders from API via Retrofit
+        orders.clear()
+        adapter.updateData(orders)
     }
 
     private fun filterOrders() {

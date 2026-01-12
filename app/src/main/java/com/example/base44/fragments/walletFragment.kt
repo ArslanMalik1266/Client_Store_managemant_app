@@ -19,11 +19,14 @@ import com.example.base44.dataClass.SimpleOrderItem
 import com.example.base44.dataClass.isThisWeek
 import com.example.base44.dataClass.isToday
 import com.example.base44.dataClass.isYesterday
+import com.example.base44.dataClass.api.UserData
+import com.example.base44.network.RetrofitClient
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -46,12 +49,10 @@ class walletFragment : Fragment() {
     private lateinit var weekCommissionText: TextView
     private lateinit var creditDueWeekText: TextView
 
-    private val uid = FirebaseAuth.getInstance().uid
-    private val db = FirebaseFirestore.getInstance()
-
     private var creditLimit = 5000.0
     var currentAvailableBalance = 0.0
     private var orders = listOf<OrderItem>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -96,29 +97,24 @@ class walletFragment : Fragment() {
         loadOrders()     // reload orders and update credit due
     }
 
-    // ------------------ FETCH CURRENT BALANCE (REALTIME) ------------------
+    // ------------------ FETCH CURRENT BALANCE ------------------
     private fun fetchBalance() {
-        if (uid == null) return
-
-        db.collection("users").document(uid)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) return@addSnapshotListener
-                if (snapshot != null && snapshot.exists()) {
-                    currentAvailableBalance = when (val bal = snapshot.get("walletBalance")) {
-                        is Double -> bal
-                        is Long -> bal.toDouble()
-                        is String -> bal.toDoubleOrNull() ?: 0.0
-                        else -> 0.0
-                    }
-                    creditLimit = when (val lim = snapshot.get("creditLimit")) {
-                        is Double -> lim
-                        is Long -> lim.toDouble()
-                        is String -> lim.toDoubleOrNull() ?: 5000.0
-                        else -> 5000.0
-                    }
-                    updateBalanceUI()
-                }
-            }
+//        RetrofitClient.instance.getProfile().enqueue(object : Callback<UserData> {
+//            override fun onResponse(call: Call<UserData>, response: Response<UserData>) {
+//                if (response.isSuccessful && response.body() != null) {
+//                    val user = response.body()!!
+//                    creditLimit = user.creditLimit ?: 0.0
+//                    currentAvailableBalance = user.currentBalance ?: 0.0
+//                    updateBalanceUI()
+//                } else {
+//                    // Handle error if needed
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<UserData>, t: Throwable) {
+//                // Handle network failure
+//            }
+//        })
     }
 
     // ------------------ CHIP FILTERS ------------------
@@ -205,40 +201,10 @@ class walletFragment : Fragment() {
         recyclerView.adapter = adapter
     }
 
-    // ------------------ LOAD ORDERS FROM FIRESTORE ------------------
     private fun loadOrders() {
-        if (uid == null) return
-
-        db.collection("users").document(uid)
-            .collection("orders")
-            .get()
-            .addOnSuccessListener { result ->
-                orders = result.map { doc ->
-                    val rowsList = (doc.get("rows") as? List<Map<String, Any>>)?.map {
-                        CartRow(
-                            number = it["number"] as? String ?: "",
-                            amount = it["amount"] as? String ?: "",
-                            selectedCategories = it["selectedCategories"] as? List<String> ?: emptyList(),
-                            qty = (it["qty"] as? Long)?.toInt() ?: 1
-                        )
-                    } ?: emptyList()
-
-                    OrderItem(
-                        invoiceNumber = doc.getString("invoiceNumber") ?: "",
-                        dateAdded = doc.getString("dateAdded") ?: "",
-                        timestamp = doc.getLong("timestamp") ?: 0L,
-                        totalAmount = doc.getString("totalAmount") ?: "0",
-                        status = doc.getString("status") ?: "",
-                        rows = rowsList
-                    )
-                }.sortedByDescending { it.timestamp }
-
-                filterOrders()  // filterOrders updates UI + creditDueWeek
-            }
-            .addOnFailureListener {
-                adapter.updateData(emptyList())
-                updateCreditDueWeek()
-            }
+        // TODO: Load orders from API via Retrofit
+        orders = emptyList()
+        filterOrders()
     }
 
     private fun hideToolbarAndDrawer() {

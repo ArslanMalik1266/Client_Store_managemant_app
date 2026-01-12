@@ -15,28 +15,24 @@ import com.example.base44.adaptor.utils.SessionManager
 import com.example.base44.auth.login
 import com.example.base44.dataClass.CartManager
 import com.example.base44.dataClass.Product
+import com.example.base44.dataClass.api.UserData
 import com.example.base44.fragments.HomeFragment
 import com.example.base44.fragments.ordersFragment
 import com.example.base44.fragments.resultFragment
 import com.example.base44.fragments.walletFragment
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.example.base44.network.RetrofitClient
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
     private lateinit var drawerLayout: DrawerLayout
     internal lateinit var toolbar: MaterialToolbar
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var navView: NavigationView
     private lateinit var logoutBtn: Button
-    private lateinit var googleSignInClient: GoogleSignInClient
     private val selectedProducts = mutableListOf<Product>()
     private lateinit var btnAddToCartTop: Button
     private lateinit var session: SessionManager
@@ -44,8 +40,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        session = SessionManager(this)
-        if (!session.isLoggedIn() || session.getRole() != "user") {
+        if (!session.isLoggedIn()) {
             startActivity(Intent(this, login::class.java))
             finish()
         }
@@ -55,17 +50,50 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        session = SessionManager(this)
+        
+        // Initialize Retrofit Token
+        session.getToken()?.let { token ->
+            RetrofitClient.setAuthToken(token)
+        }
+
         initViews()
         setupToolbar()
         setupBottomNav()
         setupNavView()
         setupTopCartButton()
         logoutAccount()
+        // fetchUserProfile()
 
         if (savedInstanceState == null) {
             loadFragment(HomeFragment())
         }
     }
+
+    // private fun fetchUserProfile() {
+    //    RetrofitClient.instance.getProfile().enqueue(object : retrofit2.Callback<UserData> {
+    //        override fun onResponse(call: retrofit2.Call<UserData>, response: retrofit2.Response<UserData>) {
+    //            if (response.isSuccessful && response.body() != null) {
+    //                val user = response.body()!!
+    //                
+    //                // Update UI
+    //                val headerView = navView.getHeaderView(0)
+    //                val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
+    //                // val tvDrawerEmail = headerView.findViewById<TextView>(R.id.tvEmail)
+    //
+    //                tvDrawerUsername.text = user.fullName ?: "User"
+    //                // if (::tvDrawerEmail.isInitialized) tvDrawerEmail.text = user.email
+    //
+    //                // Update Balance
+    //                userAvailableBalance = user.currentBalance ?: 0.0
+    //            }
+    //        }
+    //
+    //        override fun onFailure(call: retrofit2.Call<UserData>, t: Throwable) {
+    //            // Handle silent failure or log
+    //        }
+    //    })
+    // }
 
     private fun initViews() {
         drawerLayout = findViewById(R.id.drawerLayout)
@@ -76,43 +104,13 @@ class MainActivity : AppCompatActivity() {
         btnAddToCartTop = findViewById(R.id.btnAddToCartTop)
         btnAddToCartTop.visibility = View.GONE
 
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
-
-        // Initialize GoogleSignInClient here if needed
-        // googleSignInClient = ...
-
         val headerView = navView.getHeaderView(0)
         val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
 
-        auth.currentUser?.uid?.let { uid ->
-            db.collection("users").document(uid)
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) return@addSnapshotListener
-                    if (snapshot != null && snapshot.exists()) {
-                        val canWork = snapshot.getBoolean("canWork") ?: true
-                        if (!canWork) {
-                            // Account Suspended
-                            auth.signOut()
-                            session.logout()
-                            val intent = Intent(this, login::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            intent.putExtra("suspended", true)
-                            startActivity(intent)
-                            finish()
-                            return@addSnapshotListener
-                        }
-
-                        tvDrawerUsername.text = snapshot.getString("username") ?: "User"
-                        userAvailableBalance = when (val bal = snapshot.get("walletBalance")) {
-                            is Double -> bal
-                            is Long -> bal.toDouble()
-                            is String -> bal.toDoubleOrNull() ?: 0.0
-                            else -> 0.0
-                        }
-                    }
-                }
-        }
+        val username = session.getUsername() ?: "User"
+        tvDrawerUsername.text = username
+        
+        userAvailableBalance = 0.0     
     }
 
     private fun setupToolbar() {
@@ -198,11 +196,6 @@ class MainActivity : AppCompatActivity() {
                 .setMessage("Are you sure you want to logout?")
                 .setCancelable(false)
                 .setPositiveButton("Yes") { _, _ ->
-                    auth.signOut()
-                    try {
-                        googleSignInClient.signOut()
-                    } catch (_: Exception) {
-                    }
                     session.logout()
                     startActivity(Intent(this, login::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
