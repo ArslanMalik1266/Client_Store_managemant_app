@@ -111,9 +111,82 @@ class ordersFragment : Fragment() {
     }
 
     private fun loadOrdersFromApi() {
-        // TODO: Load orders from API via Retrofit
-        orders.clear()
-        adapter.updateData(orders)
+        val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
+        val userId = session.getUserId()
+
+        if (userId.isNullOrEmpty()) {
+             android.widget.Toast.makeText(context, "Please login to view orders", android.widget.Toast.LENGTH_SHORT).show()
+             return
+        }
+
+        com.example.base44.network.RetrofitClient.instance.getOrders().enqueue(object : retrofit2.Callback<List<com.example.base44.dataClass.api.OrderEntity>> {
+             override fun onResponse(
+                 call: retrofit2.Call<List<com.example.base44.dataClass.api.OrderEntity>>, 
+                 response: retrofit2.Response<List<com.example.base44.dataClass.api.OrderEntity>>
+             ) {
+                 if (response.isSuccessful && response.body() != null) {
+                     val allOrders = response.body()!!
+                     
+                     // Client-side filtering
+                     val userOrders = allOrders.filter { it.userId == userId }
+                     
+                     orders.clear()
+                     
+                     val gson = com.google.gson.Gson()
+                     val type = object : com.google.gson.reflect.TypeToken<List<com.example.base44.dataClass.add_to_cart_item>>() {}.type
+                     
+                     userOrders.forEach { entity ->
+                         try {
+                              val cartItems: List<com.example.base44.dataClass.add_to_cart_item> = gson.fromJson(entity.itemsJson, type) ?: emptyList()
+                              
+                              // Use the first item for summary
+                              val firstItem = cartItems.firstOrNull()
+                              
+                              // We need to flatten rows from all items if OrderItem expects a single list of rows, 
+                              // or just pass empty if checking results/history logic handles it differently.
+                              // Assuming we just want to visual summary for now or aggregate rows.
+                              val allRows = cartItems.flatMap { it.rows }
+                              
+                              val item = OrderItem(
+                                  invoiceNumber = entity.invoiceNumber ?: "",
+                                  status = entity.status ?: "Pending",
+                                  dateAdded = entity.createdDate ?: "", 
+                                  timestamp = parseTimestamp(entity.createdDate),
+                                  totalAmount = entity.totalAmount?.toString() ?: "0.00",
+                                  rows = allRows,
+                                  productName = firstItem?.productName ?: "Multiple Items",
+                                  productImage = firstItem?.drawableName ?: ""
+                              )
+                              orders.add(item)
+                         } catch (e: Exception) {
+                             android.util.Log.e("ORDERS_API", "Error parsing order: ${e.message}")
+                         }
+                     }
+                     
+                     filterOrders() // Update UI
+                     
+                 } else {
+                     android.util.Log.e("ORDERS_API", "Failed to load orders: ${response.code()}")
+                 }
+             }
+             
+             override fun onFailure(call: retrofit2.Call<List<com.example.base44.dataClass.api.OrderEntity>>, t: Throwable) {
+                 android.util.Log.e("ORDERS_API", "Network error loading orders", t)
+             }
+        })
+    }
+    
+    private fun parseTimestamp(dateString: String?): Long {
+        if (dateString == null) return System.currentTimeMillis()
+        // Improve parsing based on Base44 format (usually ISO 8601)
+        // For now, returning current time if fail, or sorting might be off
+        return try {
+             // Example format: 2026-01-13T11:13:14.002000
+             val format = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+             format.parse(dateString)?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+             System.currentTimeMillis()
+        }
     }
 
     private fun filterOrders() {

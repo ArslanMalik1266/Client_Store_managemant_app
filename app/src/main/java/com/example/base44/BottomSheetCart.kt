@@ -84,22 +84,67 @@ class BottomSheetCart(
     }
 
     private fun saveOrdersAndFinalize(totalBill: Double) {
-        // In the future, this data will be sent to the server via Retrofit
-        // and the server will return the invoice/status details.
+        val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
+        val userId = session.getUserId()
         
-        // 3️⃣ CLEAR CART
-        CartManager.clearCart()
-        adapter.notifyDataSetChanged()
-
-        android.widget.Toast.makeText(requireContext(), "Order placed successfully!", android.widget.Toast.LENGTH_SHORT).show()
-
-        // Close bottom sheet
-        dismiss()
-
-        // Go to Orders Page
-        requireActivity()
-            .findViewById<BottomNavigationView>(R.id.bottomNavigation)
-            .selectedItemId = R.id.nav_orders
+        if (userId.isNullOrEmpty()) {
+             android.widget.Toast.makeText(requireContext(), "User session invalid. Please login again.", android.widget.Toast.LENGTH_LONG).show()
+             return
+        }
+        
+        btnProceed.isEnabled = false
+        btnProceed.text = "Processing..."
+        
+        // Serialize items
+        val gson = com.google.gson.Gson()
+        val itemsJson = gson.toJson(CartManager.cartItems)
+        val invoiceNum = "INV-${System.currentTimeMillis()}"
+        
+        val request = com.example.base44.dataClass.api.OrderRequest(
+            userId = userId,
+            invoiceNumber = invoiceNum,
+            totalAmount = totalBill,
+            status = "Pending",
+            itemsJson = itemsJson
+        )
+        
+        com.example.base44.network.RetrofitClient.instance.createOrder(request).enqueue(object : retrofit2.Callback<com.example.base44.dataClass.api.OrderEntity> {
+            override fun onResponse(
+                call: retrofit2.Call<com.example.base44.dataClass.api.OrderEntity>, 
+                response: retrofit2.Response<com.example.base44.dataClass.api.OrderEntity>
+            ) {
+                 btnProceed.isEnabled = true
+                 btnProceed.text = "Proceed"
+                 
+                if (response.isSuccessful) {
+                    android.widget.Toast.makeText(requireContext(), "Order placed successfully!", android.widget.Toast.LENGTH_SHORT).show()
+                    
+                    // Clear Cart
+                    CartManager.clearCart()
+                    adapter.notifyDataSetChanged()
+                    updateTotal()
+                    
+                    dismiss()
+                    
+                    // Go to Orders Page
+                    requireActivity()
+                        .findViewById<BottomNavigationView>(R.id.bottomNavigation)
+                        .selectedItemId = R.id.nav_orders
+                        
+                } else {
+                    val err = response.errorBody()?.string()
+                    android.util.Log.e("ORDER_API", "Failed to create order: $err")
+                    android.widget.Toast.makeText(requireContext(), "Failed to place order: ${response.code()}", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+            
+            override fun onFailure(call: retrofit2.Call<com.example.base44.dataClass.api.OrderEntity>, t: Throwable) {
+                 btnProceed.isEnabled = true
+                 btnProceed.text = "Proceed"
+                 android.util.Log.e("ORDER_API", "Network error", t)
+                 android.widget.Toast.makeText(requireContext(), "Network error: ${t.message}", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun updateTotal() {

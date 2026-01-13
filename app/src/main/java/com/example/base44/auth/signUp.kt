@@ -1,26 +1,23 @@
 package com.example.base44.auth
 
+import ResendOtpRequest
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.base44.MainActivity
 import com.example.base44.R
 import com.example.base44.adaptor.utils.SessionManager
-import com.example.base44.dataClass.api.AuthResponse
-import com.example.base44.dataClass.api.RegisterRequest
-import com.example.base44.dataClass.api.UserData
-import com.example.base44.dataClass.api.VerifyRequest
+import com.example.base44.dataClass.api.*
 import com.example.base44.network.RetrofitClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class signUp : AppCompatActivity() {
+class SignUp : AppCompatActivity() {
 
     private lateinit var etEmail: EditText
     private lateinit var etPassword: EditText
@@ -35,7 +32,6 @@ class signUp : AppCompatActivity() {
         setContentView(R.layout.activity_sign_up)
 
         session = SessionManager(this)
-
         initViews()
         setupListeners()
     }
@@ -50,10 +46,7 @@ class signUp : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        btnSignup.setOnClickListener { 
-            attemptSignup() 
-        }
-
+        btnSignup.setOnClickListener { attemptSignup() }
         tvLoginIn.setOnClickListener {
             startActivity(Intent(this, login::class.java))
             finish()
@@ -66,65 +59,118 @@ class signUp : AppCompatActivity() {
         val password = etPassword.text.toString().trim()
         val confirmPassword = etConfirmPassword.text.toString().trim()
 
-        if (email.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (password != confirmPassword) {
-            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
-            return
+        // Validation
+        when {
+            email.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() -> {
+                Toast.makeText(this, "All fields required", Toast.LENGTH_SHORT).show()
+                return
+            }
+            password != confirmPassword -> {
+                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                return
+            }
         }
 
         btnSignup.isEnabled = false
-        Toast.makeText(this, "Creating account...", Toast.LENGTH_SHORT).show()
-
+        
+        // Call API
         val request = RegisterRequest(username, email, password)
-
         RetrofitClient.instance.register(request).enqueue(object : Callback<AuthResponse> {
             override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
                 btnSignup.isEnabled = true
-
-                if (response.isSuccessful) {
-                    val authResponse = response.body()
-                    if (authResponse?.status == "success" || response.code() == 200 || response.code() == 201) {
-                         // Signup Success -> Direct Login (Bypassing Verification)
-                         val user = authResponse?.user
-                         val token = authResponse?.token
-                         
-                         session.saveLogin(
-                            role = user?.role ?: "user",
-                            token = token,
-                            username = user?.fullName ?: user?.username ?: "User",
-                            email = user?.email
-                        )
-                        Toast.makeText(this@signUp, "Welcome!", Toast.LENGTH_SHORT).show()
-                        
-                        val intent = Intent(this@signUp, MainActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        showErrorDialog("Registration Failed", response.code().toString(), authResponse?.message ?: "Unknown Error")
-                    }
+                
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    Toast.makeText(this@SignUp, "Account created! Verify your email.", Toast.LENGTH_SHORT).show()
+                    showOTPDialog(email, response.body()?.token, username)
                 } else {
-                    val errorBody = response.errorBody()?.string() ?: "Unknown Error"
-                    showErrorDialog("Request Failed", response.code().toString(), errorBody)
+                    // Account might exist, try resend
+                    resendAndShowDialog(email, username)
                 }
             }
 
             override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
                 btnSignup.isEnabled = true
-                showErrorDialog("Network Error", "0", t.message ?: "Connection failed")
+                Toast.makeText(this@SignUp, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
-    private fun showErrorDialog(title: String, code: String, message: String) {
-        AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage("Code: $code\nMessage: $message")
-            .setPositiveButton("OK", null)
-            .show()
+    private fun resendAndShowDialog(email: String, username: String) {
+        RetrofitClient.instance.resendOtp(ResendOtpRequest(email)).enqueue(object : Callback<AuthResponse> {
+            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
+                Toast.makeText(this@SignUp, "Code sent to email", Toast.LENGTH_SHORT).show()
+                showOTPDialog(email, null, username)
+            }
+            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                Toast.makeText(this@SignUp, "Failed to send code", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun showOTPDialog(email: String, token: String?, username: String) {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_otp_verification, null)
+        val dialog = AlertDialog.Builder(this).setView(view).setCancelable(false).create()
+
+        val etCode = view.findViewById<EditText>(R.id.etDialogCode)
+        val btnVerify = view.findViewById<Button>(R.id.btnDialogVerify)
+        val tvResend = view.findViewById<TextView>(R.id.tvDialogResend)
+        val progress = view.findViewById<ProgressBar>(R.id.dialogProgressBar)
+
+        view.findViewById<TextView>(R.id.tvDialogSubtitle).text = "Enter code sent to $email"
+
+        btnVerify.setOnClickListener {
+            val code = etCode.text.toString().trim()
+            if (code.isEmpty()) {
+                Toast.makeText(this, "Enter OTP", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            verifyOTP(email, code, token, username, dialog, progress, btnVerify)
+        }
+
+        tvResend.setOnClickListener { resendAndShowDialog(email, username) }
+        dialog.show()
+    }
+
+    private fun verifyOTP(email: String, code: String, token: String?, username: String, 
+                         dialog: AlertDialog, progress: ProgressBar, btnVerify: Button) {
+        btnVerify.isEnabled = false
+        progress.visibility = View.VISIBLE
+
+        RetrofitClient.instance.verifyEmail(VerifyRequest(email, code))
+            .enqueue(object : Callback<AuthResponse> {
+                override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
+                    progress.visibility = View.GONE
+                    btnVerify.isEnabled = true
+
+                    if (response.isSuccessful && response.body()?.status == "success") {
+                        val body = response.body()
+                        session.saveLogin(
+                            role = body?.user?.role ?: "user",
+                            token = body?.token ?: token,
+                            username = body?.user?.fullName ?: username,
+                            email = email
+                        )
+                        
+                        Toast.makeText(this@SignUp, "Success!", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                        
+                        startActivity(Intent(this@SignUp, MainActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
+                        finish()
+                    } else {
+                        // Show actual error from API
+                        val errorMsg = response.body()?.message 
+                            ?: response.errorBody()?.string() 
+                            ?: "Verification failed"
+                        Toast.makeText(this@SignUp, errorMsg, Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                    progress.visibility = View.GONE
+                    btnVerify.isEnabled = true
+                    Toast.makeText(this@SignUp, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 }

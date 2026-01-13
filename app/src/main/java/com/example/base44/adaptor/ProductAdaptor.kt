@@ -8,9 +8,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.example.base44.MyBottomSheet
+import com.bumptech.glide.Glide
 import com.example.base44.R
 import com.google.android.material.checkbox.MaterialCheckBox
 
@@ -36,11 +35,26 @@ class ProductAdapter(
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = products[position]
+        val context = holder.itemView.context
 
-        val resId = holder.itemView.context.resources.getIdentifier(
-            product.drawableName, "drawable", holder.itemView.context.packageName
-        )
-        holder.imgProduct.setImageResource(resId)
+        // Load image: URL first, fallback to local drawable
+        if (product.drawableName.startsWith("http")) {
+            Glide.with(context)
+                .load(product.drawableName)
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .error(R.drawable.ic_launcher_foreground)
+                .into(holder.imgProduct)
+        } else {
+            val resId = context.resources.getIdentifier(
+                product.drawableName, "drawable", context.packageName
+            )
+            if (resId != 0) {
+                holder.imgProduct.setImageResource(resId)
+            } else {
+                holder.imgProduct.setImageResource(R.drawable.ic_launcher_foreground)
+            }
+        }
+
         holder.tvTitle.text = product.title
         holder.tvCode.text = product.code
         holder.cbAddToCart.isChecked = product.isAddedToCart
@@ -50,7 +64,6 @@ class ProductAdapter(
             product.isAddedToCart = isChecked
             val selectedProducts = products.filter { it.isAddedToCart }
             onSelectionChanged(selectedProducts)
-
         }
 
         // When Add button clicked

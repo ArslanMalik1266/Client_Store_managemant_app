@@ -97,24 +97,42 @@ class walletFragment : Fragment() {
         loadOrders()     // reload orders and update credit due
     }
 
-    // ------------------ FETCH CURRENT BALANCE ------------------
     private fun fetchBalance() {
-//        RetrofitClient.instance.getProfile().enqueue(object : Callback<UserData> {
-//            override fun onResponse(call: Call<UserData>, response: Response<UserData>) {
-//                if (response.isSuccessful && response.body() != null) {
-//                    val user = response.body()!!
-//                    creditLimit = user.creditLimit ?: 0.0
-//                    currentAvailableBalance = user.currentBalance ?: 0.0
-//                    updateBalanceUI()
-//                } else {
-//                    // Handle error if needed
-//                }
-//            }
-//
-//            override fun onFailure(call: Call<UserData>, t: Throwable) {
-//                // Handle network failure
-//            }
-//        })
+        val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
+        val userId = session.getUserId()
+        
+        android.util.Log.d("WALLET_API", "Fetching profile for User ID: $userId")
+        
+        if (userId.isNullOrEmpty()) {
+             android.util.Log.e("WALLET_API", "User ID not found in session")
+             return
+        }
+
+        RetrofitClient.instance.getProfile(userId).enqueue(object : Callback<com.example.base44.dataClass.api.UserData> {
+            override fun onResponse(
+                call: Call<com.example.base44.dataClass.api.UserData>,
+                response: Response<com.example.base44.dataClass.api.UserData>
+            ) {
+                if (response.isSuccessful && response.body() != null) {
+                    val user = response.body()!!
+                    
+                    android.util.Log.d("WALLET_API", "User Data from Entity: $user")
+                    
+                    creditLimit = user.creditLimit ?: 5000.0
+                    currentAvailableBalance = user.currentBalance ?: 0.0
+                    
+                    android.util.Log.d("WALLET_API", "Setting Balance: $currentAvailableBalance, Limit: $creditLimit")
+                    
+                    updateBalanceUI()
+                } else {
+                     android.util.Log.e("WALLET_API", "Failed to fetch profile: ${response.code()} ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<com.example.base44.dataClass.api.UserData>, t: Throwable) {
+                android.util.Log.e("WALLET_API", "Network error fetching profile", t)
+            }
+        })
     }
 
     // ------------------ CHIP FILTERS ------------------
@@ -202,9 +220,69 @@ class walletFragment : Fragment() {
     }
 
     private fun loadOrders() {
-        // TODO: Load orders from API via Retrofit
-        orders = emptyList()
-        filterOrders()
+        val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
+        val userId = session.getUserId()
+
+        if (userId.isNullOrEmpty()) return
+
+        RetrofitClient.instance.getOrders().enqueue(object : Callback<List<com.example.base44.dataClass.api.OrderEntity>> {
+             override fun onResponse(
+                 call: Call<List<com.example.base44.dataClass.api.OrderEntity>>, 
+                 response: Response<List<com.example.base44.dataClass.api.OrderEntity>>
+             ) {
+                 if (response.isSuccessful && response.body() != null) {
+                     val allOrders = response.body()!!
+                     val userOrders = allOrders.filter { it.userId == userId }
+                     
+                     val gson = com.google.gson.Gson()
+                     val type = object : com.google.gson.reflect.TypeToken<List<com.example.base44.dataClass.add_to_cart_item>>() {}.type
+                     
+                     val mappedOrders = mutableListOf<OrderItem>()
+                     
+                     userOrders.forEach { entity ->
+                         try {
+                              val cartItems: List<com.example.base44.dataClass.add_to_cart_item> = gson.fromJson(entity.itemsJson, type) ?: emptyList()
+                              val firstItem = cartItems.firstOrNull()
+                              val allRows = cartItems.flatMap { it.rows }
+                              
+                              val item = OrderItem(
+                                  invoiceNumber = entity.invoiceNumber ?: "",
+                                  status = entity.status ?: "Pending",
+                                  dateAdded = entity.createdDate ?: "",
+                                  timestamp = parseTimestamp(entity.createdDate),
+                                  totalAmount = entity.totalAmount?.toString() ?: "0.00",
+                                  rows = allRows,
+                                  productName = firstItem?.productName ?: "Multiple Items",
+                                  productImage = firstItem?.drawableName ?: ""
+                              )
+                              mappedOrders.add(item)
+                         } catch (e: Exception) {
+                             android.util.Log.e("WALLET_API", "Error parsing order: ${e.message}")
+                         }
+                     }
+                     
+                     orders = mappedOrders
+                     filterOrders() // Update UI and stats
+                     
+                 } else {
+                     android.util.Log.e("WALLET_API", "Failed to load orders: ${response.code()}")
+                 }
+             }
+             
+             override fun onFailure(call: Call<List<com.example.base44.dataClass.api.OrderEntity>>, t: Throwable) {
+                 android.util.Log.e("WALLET_API", "Network error loading orders", t)
+             }
+        })
+    }
+
+    private fun parseTimestamp(dateString: String?): Long {
+        if (dateString == null) return System.currentTimeMillis()
+        return try {
+             val format = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+             format.parse(dateString)?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+             System.currentTimeMillis()
+        }
     }
 
     private fun hideToolbarAndDrawer() {

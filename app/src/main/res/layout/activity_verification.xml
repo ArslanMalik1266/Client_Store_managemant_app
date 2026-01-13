@@ -45,7 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Verify Now"
-        android:backgroundTint="@color/black"
+        android:backgroundTint="@color/green"
         android:textColor="@color/white"
         android:padding="12dp"
         android:textAllCaps="false" />

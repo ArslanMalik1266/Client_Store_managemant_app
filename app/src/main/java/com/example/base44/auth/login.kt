@@ -27,101 +27,101 @@ class login : AppCompatActivity() {
     private lateinit var tvSignup: TextView
     private lateinit var session: SessionManager
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        
-        etEmail = findViewById(R.id.etEmail)
-        etPassword = findViewById(R.id.etPassword)
-        btnLogin = findViewById(R.id.btnLogin)
-        btnGoogleLogin = findViewById(R.id.btnGoogleLogin)
-        tvSignup = findViewById(R.id.tvSignup)
+
         session = SessionManager(this)
 
-        if (intent.getBooleanExtra("suspended", false)) {
-            Toast.makeText(this, "Account Suspended", Toast.LENGTH_LONG).show()
-        }
-
+        // Check if already logged in
         if (session.isLoggedIn()) {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
             return
         }
 
+        initViews()
+        setupListeners()
+    }
+
+    private fun initViews() {
+        etEmail = findViewById(R.id.etEmail)
+        etPassword = findViewById(R.id.etPassword)
+        btnLogin = findViewById(R.id.btnLogin)
+        btnGoogleLogin = findViewById(R.id.btnGoogleLogin)
+        tvSignup = findViewById(R.id.tvSignup)
+    }
+
+    private fun setupListeners() {
+        btnLogin.setOnClickListener { attemptLogin() }
+        
         tvSignup.setOnClickListener {
-            val intent = Intent(this, signUp::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
+            startActivity(Intent(this, SignUp::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
             finish()
-        }
-
-        btnLogin.setOnClickListener {
-            val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString().trim()
-
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            btnLogin.isEnabled = false
-            val loginRequest = LoginRequest(email, password)
-            RetrofitClient.instance.login(loginRequest).enqueue(object : Callback<AuthResponse> {
-                override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
-                    btnLogin.isEnabled = true
-                    if (response.isSuccessful) {
-                        val authResponse = response.body()
-                        if (authResponse?.status == "success") {
-                            val user = authResponse.user
-                            session.saveLogin(
-                                role = user?.role ?: "user",
-                                token = authResponse.token,
-                                username = user?.fullName,
-                                email = user?.email
-                            )
-                            val intent = Intent(this@login, MainActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            startActivity(intent)
-                            Toast.makeText(this@login, "Login successful", Toast.LENGTH_SHORT).show()
-                            finish()
-                        } else {
-                            Toast.makeText(this@login, authResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        val errorBody = response.errorBody()?.string() ?: "Unknown Error"
-                        
-                        // Check if error is related to verification
-                        if (errorBody.contains("verify", ignoreCase = true)) {
-                            android.app.AlertDialog.Builder(this@login)
-                                .setTitle("Verification Required")
-                                .setMessage("Please verify your email address to login.\nReason: $errorBody")
-                                .setPositiveButton("Verify Now") { _, _ ->
-                                    val intent = Intent(this@login, VerificationActivity::class.java)
-                                    intent.putExtra("EMAIL", email)
-                                    // Token might not be available here, but verify endpoint might work with just email/code or we prompt re-signup?
-                                    // Assuming VerificationActivity can handle just email if needed, or user will re-request code
-                                    startActivity(intent)
-                                }
-                                .setNegativeButton("Cancel", null)
-                                .show()
-                        } else {
-                            android.app.AlertDialog.Builder(this@login)
-                                .setTitle("Login Failed")
-                                .setMessage("Code: ${response.code()}\nReason: $errorBody")
-                                .setPositiveButton("OK", null)
-                                .show()
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
-                    btnLogin.isEnabled = true
-                    Toast.makeText(this@login, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
         }
     }
 
+    private fun attemptLogin() {
+        val email = etEmail.text.toString().trim()
+        val password = etPassword.text.toString().trim()
+
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Enter email and password", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        btnLogin.isEnabled = false
+
+        val request = LoginRequest(email, password)
+        RetrofitClient.instance.login(request).enqueue(object : Callback<AuthResponse> {
+            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
+                btnLogin.isEnabled = true
+
+                // Debug: Print raw response
+                val rawResponse = response.raw().toString()
+                android.util.Log.d("LOGIN_DEBUG", "Response Code: ${response.code()}")
+                android.util.Log.d("LOGIN_DEBUG", "Response Body: ${response.body()}")
+                android.util.Log.d("LOGIN_DEBUG", "Token: ${response.body()?.token}")
+                android.util.Log.d("LOGIN_DEBUG", "AccessToken: ${response.body()?.accessToken}")
+                android.util.Log.d("LOGIN_DEBUG", "ActualToken: ${response.body()?.getActualToken()}")
+                android.util.Log.d("LOGIN_DEBUG", "Raw: $rawResponse")
+
+                if (response.isSuccessful && (response.body()?.status == "success" || response.code() == 200)) {
+                    val body = response.body()
+                    val actualToken = body?.getActualToken()
+
+                    session.saveLogin(
+                        role = body?.user?.role ?: "user",
+                        token = actualToken,
+                        username = body?.user?.fullName,
+                        email = body?.user?.email,
+                        userId = body?.user?.id
+                    )
+                    
+                    // Set token for API calls
+                    actualToken?.let { RetrofitClient.setAuthToken(it) }
+                    android.util.Log.d("LOGIN_DEBUG", "Token saved and set: ${actualToken?.take(20)}...")
+
+                    Toast.makeText(this@login, "Login successful", Toast.LENGTH_SHORT).show()
+
+                    startActivity(Intent(this@login, MainActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
+                    finish()
+                } else {
+                    val body = response.body()
+                    val status = body?.status ?: "null"
+                    val message = body?.message ?: "No message"
+
+                    Toast.makeText(this@login, "Login failed: $message", Toast.LENGTH_LONG).show()
+                    android.util.Log.e("LOGIN_DEBUG", "Login failed - Code: ${response.code()}, Status: $status, Msg: $message")
+                }
+            }
+
+            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                btnLogin.isEnabled = true
+                Toast.makeText(this@login, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 }

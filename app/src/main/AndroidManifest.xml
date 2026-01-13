@@ -27,7 +27,7 @@
             android:name=".itemView_rv"
             android:exported="false" />
         <activity
-            android:name=".auth.signUp"
+            android:name=".auth.SignUp"
             android:exported="true" />
         <activity
             android:name=".auth.login"

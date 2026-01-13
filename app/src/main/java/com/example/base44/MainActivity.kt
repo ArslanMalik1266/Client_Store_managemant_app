@@ -63,37 +63,41 @@ class MainActivity : AppCompatActivity() {
         setupNavView()
         setupTopCartButton()
         logoutAccount()
-        // fetchUserProfile()
+        fetchUserProfile()
 
         if (savedInstanceState == null) {
             loadFragment(HomeFragment())
         }
     }
 
-    // private fun fetchUserProfile() {
-    //    RetrofitClient.instance.getProfile().enqueue(object : retrofit2.Callback<UserData> {
-    //        override fun onResponse(call: retrofit2.Call<UserData>, response: retrofit2.Response<UserData>) {
-    //            if (response.isSuccessful && response.body() != null) {
-    //                val user = response.body()!!
-    //                
-    //                // Update UI
-    //                val headerView = navView.getHeaderView(0)
-    //                val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
-    //                // val tvDrawerEmail = headerView.findViewById<TextView>(R.id.tvEmail)
-    //
-    //                tvDrawerUsername.text = user.fullName ?: "User"
-    //                // if (::tvDrawerEmail.isInitialized) tvDrawerEmail.text = user.email
-    //
-    //                // Update Balance
-    //                userAvailableBalance = user.currentBalance ?: 0.0
-    //            }
-    //        }
-    //
-    //        override fun onFailure(call: retrofit2.Call<UserData>, t: Throwable) {
-    //            // Handle silent failure or log
-    //        }
-    //    })
-    // }
+    private fun fetchUserProfile() {
+        val userId = session.getUserId()
+        if (userId.isNullOrEmpty()) return
+
+        RetrofitClient.instance.getProfile(userId).enqueue(object : retrofit2.Callback<UserData> {
+            override fun onResponse(call: retrofit2.Call<UserData>, response: retrofit2.Response<UserData>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val user = response.body()!!
+                    
+                    // Update UI
+                    val headerView = navView.getHeaderView(0)
+                    val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
+                    // val tvDrawerEmail = headerView.findViewById<TextView>(R.id.tvEmail)
+
+                    tvDrawerUsername.text = user.fullName ?: "User"
+                    // if (::tvDrawerEmail.isInitialized) tvDrawerEmail.text = user.email
+
+                    // Update Balance
+                    userAvailableBalance = user.currentBalance ?: 0.0
+                    android.util.Log.d("MAIN_ACTIVITY", "Balance updated: $userAvailableBalance")
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<UserData>, t: Throwable) {
+                android.util.Log.e("MAIN_ACTIVITY", "Failed to fetch profile", t)
+            }
+        })
+    }
 
     private fun initViews() {
         drawerLayout = findViewById(R.id.drawerLayout)

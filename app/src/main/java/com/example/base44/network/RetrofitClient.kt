@@ -8,7 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Corrected Host: app.base44.com matches the dashboard and avoids Wix error
+
     private const val BASE_URL = "https://app.base44.com/api/apps/69428374b1ddce6ec16e329e/"
 
     private const val API_KEY = "f86d06aa9547468d9da30a308726a10b"
@@ -25,9 +25,9 @@ object RetrofitClient {
     private val authInterceptor = Interceptor { chain ->
         val original = chain.request()
         val builder = original.newBuilder()
-            .header("api_key", API_KEY)
+            .header("X-API-Key", API_KEY)
             .header("Content-Type", "application/json")
-        
+
         authToken?.let {
             builder.header("Authorization", "Bearer $it")
         }
@@ -43,12 +43,11 @@ object RetrofitClient {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    val instance: ApiService by lazy {
-        Retrofit.Builder()
+    val instance: ApiService
+        get() = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
-    }
 }
