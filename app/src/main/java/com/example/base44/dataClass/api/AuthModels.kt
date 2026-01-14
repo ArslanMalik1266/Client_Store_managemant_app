@@ -2,13 +2,11 @@ package com.example.base44.dataClass.api
 
 import com.google.gson.annotations.SerializedName
 
-// Login Request
 data class LoginRequest(
     val email: String,
     val password: String
 )
 
-// Register Request
 data class RegisterRequest(
     val username: String,
     val email: String,
@@ -42,5 +40,6 @@ data class UserData(
     val email: String?,
     val role: String?,
     @SerializedName("current_balance") val currentBalance: Double? = 0.0,
-    @SerializedName("credit_limit") val creditLimit: Double? = 0.0
+    @SerializedName("credit_limit") val creditLimit: Double? = 0.0,
+    @SerializedName("commission_rate") val commissionRate: Double? = 0.0
 )

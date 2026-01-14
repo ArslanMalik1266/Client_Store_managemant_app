@@ -104,7 +104,7 @@ class BottomSheetCart(
             userId = userId,
             invoiceNumber = invoiceNum,
             totalAmount = totalBill,
-            status = "Pending",
+            status = "pending",
             itemsJson = itemsJson
         )
         
@@ -118,6 +118,9 @@ class BottomSheetCart(
                  
                 if (response.isSuccessful) {
                     android.widget.Toast.makeText(requireContext(), "Order placed successfully!", android.widget.Toast.LENGTH_SHORT).show()
+                    
+                    // Refresh User Balance
+                    (activity as? com.example.base44.MainActivity)?.fetchUserProfile()
                     
                     // Clear Cart
                     CartManager.clearCart()

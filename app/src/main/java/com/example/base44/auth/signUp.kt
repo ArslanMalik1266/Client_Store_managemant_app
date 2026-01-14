@@ -1,6 +1,5 @@
 package com.example.base44.auth
 
-import ResendOtpRequest
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater

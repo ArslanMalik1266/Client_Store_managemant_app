@@ -1,6 +1,5 @@
 package com.example.base44.adaptor
 
-
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +26,7 @@ class OrdersAdapter(
         val productCode: TextView = itemView.findViewById(R.id.cart_item_code)
         val totalLabel: TextView = itemView.findViewById(R.id.total_tv)
         val totalAmount: TextView = itemView.findViewById(R.id.total_amount)
-        val rvRows : RecyclerView = itemView.findViewById(R.id.recyclerview_orderSizes)
+        val rvRows: RecyclerView = itemView.findViewById(R.id.recyclerview_orderSizes)
 
         init {
             itemView.setOnClickListener {
@@ -44,19 +43,29 @@ class OrdersAdapter(
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val item = orderList[position]
+
         holder.invoiceTv.text = item.invoiceNumber
         holder.statusTv.text = item.status
         holder.dateTv.text = item.dateAdded
         holder.raceDayTv.text = "Race day: ${item.raceDay}"
-        val resId = holder.itemView.context.resources.getIdentifier(
-            item.productImage, "drawable", holder.itemView.context.packageName
-        )
-        holder.productImage.setImageResource(resId)
-        
+
+        if (item.productImage.startsWith("http")) {
+            Glide.with(holder.itemView.context)
+                .load(item.productImage)
+                .into(holder.productImage)
+        } else {
+            val resId = holder.itemView.context.resources.getIdentifier(
+                item.productImage, "drawable", holder.itemView.context.packageName
+            )
+            if (resId != 0) holder.productImage.setImageResource(resId)
+        }
+
         holder.productName.text = item.productName
         holder.productCode.text = item.productCode
         holder.totalLabel.text = item.totalLabel
         holder.totalAmount.text = item.totalAmount
+
+        // RecyclerView for rows inside each order
         holder.rvRows.layoutManager = LinearLayoutManager(holder.itemView.context)
         holder.rvRows.adapter = TagAdapter(item.rows)
     }

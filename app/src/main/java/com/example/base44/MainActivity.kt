@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity() {
 
         session = SessionManager(this)
         
-        // Initialize Retrofit Token
         session.getToken()?.let { token ->
             RetrofitClient.setAuthToken(token)
         }
@@ -70,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchUserProfile() {
+    fun fetchUserProfile() {
         val userId = session.getUserId()
         if (userId.isNullOrEmpty()) return
 

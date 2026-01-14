@@ -50,6 +50,7 @@ class walletFragment : Fragment() {
     private lateinit var creditDueWeekText: TextView
 
     private var creditLimit = 5000.0
+    private var commissionRate = 25.0 // Default or from API
     var currentAvailableBalance = 0.0
     private var orders = listOf<OrderItem>()
 
@@ -115,15 +116,15 @@ class walletFragment : Fragment() {
             ) {
                 if (response.isSuccessful && response.body() != null) {
                     val user = response.body()!!
-                    
-                    android.util.Log.d("WALLET_API", "User Data from Entity: $user")
-                    
                     creditLimit = user.creditLimit ?: 5000.0
                     currentAvailableBalance = user.currentBalance ?: 0.0
-                    
-                    android.util.Log.d("WALLET_API", "Setting Balance: $currentAvailableBalance, Limit: $creditLimit")
-                    
+                    // Use commissionRate from API or default to 25.0 if null
+                    commissionRate = user.commissionRate ?: 25.0 
                     updateBalanceUI()
+                    // Re-calculate stats with new rate if orders are loaded
+                    if (orders.isNotEmpty()) {
+                         filterOrders()
+                    }
                 } else {
                      android.util.Log.e("WALLET_API", "Failed to fetch profile: ${response.code()} ${response.errorBody()?.string()}")
                 }
@@ -169,18 +170,20 @@ class walletFragment : Fragment() {
     private fun updateStats(filteredOrders: List<OrderItem>) {
         val totalSales = filteredOrders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
         tvPeriodSaleAmount.text = "RM %.2f".format(totalSales)
-
-        tvPeriodCommissionAmount.text = "RM %.2f".format(totalSales * 0.25)
+        
+        // Calculate commission
+        val commission = totalSales * (commissionRate / 100.0)
+        tvPeriodCommissionAmount.text = "RM %.2f".format(commission)
 
         val weekOrders = orders.filter { it.isThisWeek() }
-        val weekCommission = weekOrders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 } * 0.25
+        val weekTotal = weekOrders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
+        val weekCommission = weekTotal * (commissionRate / 100.0)
         weekCommissionText.text = "RM %.2f".format(weekCommission)
 
         val nextMonday = getNextMonday()
         view?.findViewById<TextView>(R.id.comissionText)?.text = "Pay on $nextMonday"
     }
 
-    // ------------------ CREDIT DUE THIS WEEK ------------------
     private fun updateCreditDueWeek() {
         val creditUsedThisWeek = orders
             .filter { it.isThisWeek() }
@@ -198,7 +201,6 @@ class walletFragment : Fragment() {
         return SimpleDateFormat("EEEE, dd MMM", Locale.getDefault()).format(calendar.time)
     }
 
-    // ------------------ UPDATE BALANCE UI ------------------
     private fun updateBalanceUI() {
         walletBalance.text = "Credit Limit: RM %.2f".format(creditLimit)
         availableBalance.text = "RM %.2f".format(currentAvailableBalance)
@@ -211,7 +213,6 @@ class walletFragment : Fragment() {
         (activity as? MainActivity)?.userAvailableBalance = currentAvailableBalance
     }
 
-    // ------------------ RECYCLER VIEW ------------------
     private fun setupRecyclerView(view: View) {
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -222,6 +223,7 @@ class walletFragment : Fragment() {
     private fun loadOrders() {
         val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
         val userId = session.getUserId()
+        val userEmail = session.getEmail()
 
         if (userId.isNullOrEmpty()) return
 
@@ -232,7 +234,12 @@ class walletFragment : Fragment() {
              ) {
                  if (response.isSuccessful && response.body() != null) {
                      val allOrders = response.body()!!
-                     val userOrders = allOrders.filter { it.userId == userId }
+                     
+                     // Client-side filtering (Check both ID and createdBy/Email)
+                     val userOrders = allOrders.filter { 
+                         (it.userId == userId) || 
+                         (!it.createdBy.isNullOrEmpty() && !userEmail.isNullOrEmpty() && it.createdBy == userEmail)
+                     }
                      
                      val gson = com.google.gson.Gson()
                      val type = object : com.google.gson.reflect.TypeToken<List<com.example.base44.dataClass.add_to_cart_item>>() {}.type
@@ -262,7 +269,7 @@ class walletFragment : Fragment() {
                      }
                      
                      orders = mappedOrders
-                     filterOrders() // Update UI and stats
+                     filterOrders()
                      
                  } else {
                      android.util.Log.e("WALLET_API", "Failed to load orders: ${response.code()}")
@@ -276,13 +283,31 @@ class walletFragment : Fragment() {
     }
 
     private fun parseTimestamp(dateString: String?): Long {
-        if (dateString == null) return System.currentTimeMillis()
-        return try {
-             val format = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
-             format.parse(dateString)?.time ?: System.currentTimeMillis()
-        } catch (e: Exception) {
-             System.currentTimeMillis()
+        if (dateString.isNullOrEmpty()) return System.currentTimeMillis()
+        
+        // Try multiple formats
+        val formats = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd HH:mm:ss"
+        )
+        
+        for (pattern in formats) {
+            try {
+                val format = java.text.SimpleDateFormat(pattern, java.util.Locale.getDefault())
+                // Adjust for timezone if needed, usually Z means UTC
+                if (pattern.endsWith("'Z'")) {
+                    format.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                }
+                val date = format.parse(dateString)
+                if (date != null) return date.time
+            } catch (e: Exception) {
+                // Try next format
+            }
         }
+        
+        return System.currentTimeMillis()
     }
 
     private fun hideToolbarAndDrawer() {

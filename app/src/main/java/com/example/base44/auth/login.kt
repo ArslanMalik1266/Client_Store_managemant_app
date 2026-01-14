@@ -78,15 +78,6 @@ class login : AppCompatActivity() {
             override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
                 btnLogin.isEnabled = true
 
-                // Debug: Print raw response
-                val rawResponse = response.raw().toString()
-                android.util.Log.d("LOGIN_DEBUG", "Response Code: ${response.code()}")
-                android.util.Log.d("LOGIN_DEBUG", "Response Body: ${response.body()}")
-                android.util.Log.d("LOGIN_DEBUG", "Token: ${response.body()?.token}")
-                android.util.Log.d("LOGIN_DEBUG", "AccessToken: ${response.body()?.accessToken}")
-                android.util.Log.d("LOGIN_DEBUG", "ActualToken: ${response.body()?.getActualToken()}")
-                android.util.Log.d("LOGIN_DEBUG", "Raw: $rawResponse")
-
                 if (response.isSuccessful && (response.body()?.status == "success" || response.code() == 200)) {
                     val body = response.body()
                     val actualToken = body?.getActualToken()
