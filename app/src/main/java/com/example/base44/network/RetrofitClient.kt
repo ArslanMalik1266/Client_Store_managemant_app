@@ -26,7 +26,6 @@ object RetrofitClient {
         val original = chain.request()
         val builder = original.newBuilder()
             .header("X-API-Key", API_KEY)
-            .header("Content-Type", "application/json")
 
         authToken?.let {
             builder.header("Authorization", "Bearer $it")
@@ -50,4 +49,6 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
+
+    val api: ApiService by lazy { instance }
 }

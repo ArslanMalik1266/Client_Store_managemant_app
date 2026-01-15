@@ -29,7 +29,6 @@ data class AuthResponse(
     @SerializedName("expires_in") val expiresIn: Int?,
     val user: UserData?
 ) {
-    // Get the actual token (access_token or token)
     fun getActualToken(): String? = accessToken ?: token
 }
 
@@ -41,5 +40,11 @@ data class UserData(
     val role: String?,
     @SerializedName("current_balance") val currentBalance: Double? = 0.0,
     @SerializedName("credit_limit") val creditLimit: Double? = 0.0,
-    @SerializedName("commission_rate") val commissionRate: Double? = 0.0
+    @SerializedName("commission_rate") val commissionRate: Int? = 0,
+    @SerializedName("total_sales") val totalSales: Double? = 0.0,
+    @SerializedName("total_commission") val totalCommission: Double? = 0.0,
+    @SerializedName("outstanding_debt") val outstandingDebt: Double? = 0.0,
+    @SerializedName("weekly_commission") val weeklyCommission: Double? = 0.0,
+    @SerializedName("last_commission_paid") val lastCommissionPaid: Double? = 0.0,
+    @SerializedName("commission_paid_date") val lastCommissionDate: String? = ""
 )

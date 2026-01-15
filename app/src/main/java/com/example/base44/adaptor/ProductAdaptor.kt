@@ -14,7 +14,7 @@ import com.example.base44.R
 import com.google.android.material.checkbox.MaterialCheckBox
 
 class ProductAdapter(
-    private val products: List<Product>,
+    private val products: MutableList<Product>,
     private val onAddToCartClicked: (Product) -> Unit,
     private val onSelectionChanged: (List<Product>) -> Unit
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
@@ -73,4 +73,12 @@ class ProductAdapter(
     }
 
     override fun getItemCount(): Int = products.size
+
+    fun updateList(newList: List<Product>) {
+        products.clear()
+        products.addAll(newList)
+        notifyDataSetChanged()
+    }
+
 }
+

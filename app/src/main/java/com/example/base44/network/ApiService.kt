@@ -1,5 +1,7 @@
 package com.example.base44.network
 
+import com.example.base44.dataClass.CreateTransactionRequest
+import com.example.base44.dataClass.Order
 import com.example.base44.dataClass.api.ResendOtpRequest
 import com.example.base44.dataClass.api.AuthResponse
 import com.example.base44.dataClass.api.LoginRequest
@@ -8,19 +10,18 @@ import com.example.base44.dataClass.api.RegisterRequest
 import com.example.base44.dataClass.api.UserData
 import com.example.base44.dataClass.api.VerifyRequest
 import com.example.base44.dataClass.api.PaymentTransaction
-import com.example.base44.dataClass.api.TransactionRequest
-import com.example.base44.dataClass.api.DrawResult
-import com.example.base44.dataClass.api.WinningAmount
-import com.example.base44.dataClass.api.FileUploadResponse
+import com.example.base44.dataClass.api.OrderEntity
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
 
     @GET("auth/me")
-    fun getMe(): Call<UserData>
+    suspend fun getUser(): Call<UserData>
 
     @POST("auth/login")
     fun login(@Body request: LoginRequest): Call<AuthResponse>
@@ -35,41 +36,35 @@ interface ApiService {
     fun resendOtp(@Body request: ResendOtpRequest): Call<AuthResponse>
 
     @GET("entities/Product")
-    fun getProducts(): Call<List<ProductEntity>>
+    suspend fun getProducts(): Response<List<ProductEntity>>
 
     @GET("entities/User/{id}")
     fun getProfile(@retrofit2.http.Path("id") id: String): Call<UserData>
 
     @POST("entities/Order")
-    fun createOrder(@Body order: com.example.base44.dataClass.api.OrderRequest): Call<com.example.base44.dataClass.api.OrderEntity>
-
-    @GET("entities/Order")
-    fun getOrders(@retrofit2.http.Query("sort") sort: String? = null): Call<List<com.example.base44.dataClass.api.OrderEntity>>
+    fun createOrderRaw(@Body orderData: Map<String, Any>): Call<Map<String, Any>>
 
     // Payment Transactions
-    @GET("entities/PaymentTransaction")
-    fun getTransactions(
-        @retrofit2.http.Query("user_email") email: String? = null,
-        @retrofit2.http.Query("sort") sort: String? = "-created_date",
-        @retrofit2.http.Query("limit") limit: Int? = 100
-    ): Call<List<PaymentTransaction>>
+    @GET("transactions")
+    suspend fun getPaymentTransactions(
+        @Query("user_email") email: String
+    ): List<PaymentTransaction>
 
+    @POST("transactions")
+    suspend fun createTransaction(
+        @Body body: CreateTransactionRequest
+    ): PaymentTransaction
+
+    @POST("https://app.base44.com/fileupload")
+    fun uploadFileBubble(@Body body: com.example.base44.dataClass.FileRequest): Call<okhttp3.ResponseBody>
+
+    // Entity Creation
     @POST("entities/PaymentTransaction")
-    fun createTransaction(@Body transaction: TransactionRequest): Call<PaymentTransaction>
+    fun createPaymentTransaction(
+        @Body body: PaymentTransaction
+    ): Call<PaymentTransaction>
 
-    // Draw Results
-    @GET("entities/DrawResult")
-    fun getDrawResults(
-        @retrofit2.http.Query("sort") sort: String? = "-draw_date",
-        @retrofit2.http.Query("limit") limit: Int? = 100
-    ): Call<List<DrawResult>>
-
-    // Winning Amounts
-    @GET("entities/WinningAmount")
-    fun getWinningAmounts(): Call<List<WinningAmount>>
-
-    // File Upload
-    @retrofit2.http.Multipart
-    @POST("integrations/Core/UploadFile")
-    fun uploadFile(@retrofit2.http.Part file: okhttp3.MultipartBody.Part): Call<FileUploadResponse>
+    @POST("entities/Order")
+    fun createOrder(@Body request: com.example.base44.dataClass.OrderRequest): Call<OrderEntity>
 }
+

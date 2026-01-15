@@ -3,7 +3,7 @@ package com.example.base44.dataClass
 data class add_to_cart_item(
     val productName: String,
     val bettingSlip: String? = null,
-    val productCode: String,
+    val productCode: Int,
     val raceDays: List<String> = emptyList(),
     val rows: List<CartRow>,
     val drawableName: String = "",

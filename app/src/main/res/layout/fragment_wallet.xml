@@ -41,7 +41,7 @@
                 app:cardCornerRadius="12dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-               app:layout_constraintTop_toTopOf="@id/constraintLayout">
+                app:layout_constraintTop_toTopOf="@id/constraintLayout">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -54,63 +54,63 @@
                         android:layout_height="wrap_content"
                         android:scrollbars="none">
 
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupFilter"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:selectionRequired="true"
-                        app:singleLine="true"
-                        android:scrollbars="horizontal"
-                        app:singleSelection="true">
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipToday"
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupFilter"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:checked="true"
-                            android:text="Today"
-                            android:textSize="10sp"
-                            android:checkable="true"
-                            android:textColor="@color/chip_text_selector"
-                            app:checkedIconVisible="false"
-                            app:chipBackgroundColor="@color/chip_bg_color"
-                            app:chipStrokeColor="@color/strokeGrey" />
+                            app:selectionRequired="true"
+                            app:singleLine="true"
+                            android:scrollbars="horizontal"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipToday"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="true"
+                                android:text="Today"
+                                android:textSize="10sp"
+                                android:checkable="true"
+                                android:textColor="@color/chip_text_selector"
+                                app:checkedIconVisible="false"
+                                app:chipBackgroundColor="@color/chip_bg_color"
+                                app:chipStrokeColor="@color/strokeGrey" />
 
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipYesterday"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Yesterday"
-                            android:textSize="10sp"
-                            android:checkable="true"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipBackgroundColor="@color/chip_bg_color"
-                            app:chipStrokeColor="@color/strokeGrey" />
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipYesterday"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Yesterday"
+                                android:textSize="10sp"
+                                android:checkable="true"
+                                android:textColor="@color/chip_text_selector"
+                                app:chipBackgroundColor="@color/chip_bg_color"
+                                app:chipStrokeColor="@color/strokeGrey" />
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipThisWeek"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="This Week"
-                            android:textSize="10sp"
-                            android:checkable="true"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipBackgroundColor="@color/chip_bg_color"
-                            app:chipStrokeColor="@color/strokeGrey" />
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipThisWeek"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="This Week"
+                                android:textSize="10sp"
+                                android:checkable="true"
+                                android:textColor="@color/chip_text_selector"
+                                app:chipBackgroundColor="@color/chip_bg_color"
+                                app:chipStrokeColor="@color/strokeGrey" />
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipAll"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="All"
-                            android:textSize="10sp"
-                            android:checkable="true"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipBackgroundColor="@color/chip_bg_color"
-                            app:chipStrokeColor="@color/strokeGrey" />
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipAll"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="All"
+                                android:textSize="10sp"
+                                android:checkable="true"
+                                android:textColor="@color/chip_text_selector"
+                                app:chipBackgroundColor="@color/chip_bg_color"
+                                app:chipStrokeColor="@color/strokeGrey" />
 
-                    </com.google.android.material.chip.ChipGroup>
+                        </com.google.android.material.chip.ChipGroup>
 
                     </HorizontalScrollView>
 
@@ -260,7 +260,7 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginEnd="4dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/white">
@@ -288,6 +288,16 @@
                             android:text="RM 0.00"
                             android:textColor="@color/golden"
                             android:textSize="16sp" />
+
+                        <Button
+                            android:id="@+id/btnUploadProof"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Upload Payment Proof"
+                            android:textColor="@color/black"
+                            android:textSize="10sp"
+                            android:backgroundTint="@color/off_white" />
 
                     </LinearLayout>
 
@@ -327,9 +337,9 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/inter_bold"
                                 android:text="RM 0.00"
+                                android:textColor="@color/blue"
                                 android:layout_weight="1"
                                 android:textSize="16sp" />
-
 
 
                             <androidx.cardview.widget.CardView
@@ -341,13 +351,14 @@
                                 app:layout_constraintTop_toBottomOf="@+id/cardView">
 
                                 <TextView
+                                    android:id="@+id/comission_rate"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:background="@color/light_green"
+                                    android:background="@color/light_blue"
                                     android:paddingHorizontal="8dp"
                                     android:paddingVertical="4dp"
                                     android:text="25%"
-                                    android:textColor="@color/green"
+                                    android:textColor="@color/blue"
                                     android:textSize="10sp"
                                     tools:layout_editor_absoluteX="16dp"
                                     tools:layout_editor_absoluteY="16dp" />
@@ -371,6 +382,7 @@
             </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/recyclerView_cardView"
                 android:layout_width="0dp"
                 android:layout_height="400dp"
                 android:layout_marginTop="16dp"
@@ -387,7 +399,6 @@
                     android:padding="16dp">
 
 
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -401,8 +412,7 @@
                         android:id="@+id/recyclerView"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginTop="8dp"
-                        />
+                        android:layout_marginTop="8dp" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -412,6 +422,59 @@
                         android:gravity="center"
                         android:text="No orders yet"
                         android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/lastComissionPaid_cardView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="@color/light_green"
+                app:cardCornerRadius="12dp"
+                app:layout_constraintEnd_toEndOf="@id/recyclerView_cardView"
+                app:layout_constraintStart_toStartOf="@id/recyclerView_cardView"
+                app:layout_constraintTop_toBottomOf="@id/recyclerView_cardView">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter_bold"
+                        android:text="Last Comission Paid"
+                        android:textColor="@color/black"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/lastComissionPaid_Value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="@font/inter_bold"
+                        android:text="RM 0.00"
+                        android:textColor="@color/green"
+                        android:textSize="20sp" />
+
+
+                    <TextView
+                        android:id="@+id/payment_date_lastComission"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="@font/inter_regular"
+                        android:text="Payment Date: 07 Jan 2026, 12:00 AM "
+                        android:textColor="@color/black"
+                        android:textSize="10sp" />
+
 
                 </LinearLayout>
 

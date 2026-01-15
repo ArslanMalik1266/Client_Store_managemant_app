@@ -69,7 +69,7 @@ class ordersFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         hideToolbarAndDrawer()
-        loadOrdersFromApi()
+//        loadOrdersFromApi()
     }
 
     private fun hideToolbarAndDrawer() {
@@ -111,104 +111,104 @@ class ordersFragment : Fragment() {
         }
     }
 
-    private fun loadOrdersFromApi() {
-        val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
-        val userId = session.getUserId()
-
-        if (userId.isNullOrEmpty()) {
-             android.widget.Toast.makeText(context, "Please login to view orders", android.widget.Toast.LENGTH_SHORT).show()
-             return
-        }
-
-        com.example.base44.network.RetrofitClient.instance.getOrders().enqueue(object : retrofit2.Callback<List<com.example.base44.dataClass.api.OrderEntity>> {
-             override fun onResponse(
-                 call: retrofit2.Call<List<com.example.base44.dataClass.api.OrderEntity>>,
-                 response: retrofit2.Response<List<com.example.base44.dataClass.api.OrderEntity>>
-             ) {
-                 if (response.isSuccessful && response.body() != null) {
-                     val allOrders = response.body()!!
-                     val userEmail = session.getEmail()
-
-                     // Client-side filtering (Check both ID and createdBy/Email)
-                     // DEBUG LOGGING
-                     android.util.Log.d("ORDERS_DEBUG", "Fetched ${allOrders.size} orders from API")
-                     android.util.Log.d("ORDERS_DEBUG", "Current User ID: $userId, Email: $userEmail")
-                     
-                     // TEMPORARY DEBUG: Show ALL orders to verify fetch works
-                     val userOrders = allOrders 
-                     
-                     /*
-                     val userOrders = allOrders.filter { 
-                         val matchId = (it.userId == userId)
-                         val matchEmail = (!it.createdBy.isNullOrEmpty() && !userEmail.isNullOrEmpty() && it.createdBy == userEmail)
-                         if (matchId || matchEmail) {
-                             true 
-                         } else {
-                             // Log the first few that don't match to trace why
-                             // android.util.Log.d("ORDERS_DEBUG", "Skipping Order: ID=${it.userId}, CreatedBy=${it.createdBy}")
-                             false
-                         }
-                     }
-                     */
-                     android.util.Log.d("ORDERS_DEBUG", "Filtered down to ${userOrders.size} orders for user")
-
-                     orders.clear()
-
-                     val gson = com.google.gson.Gson()
-                     val type = object : com.google.gson.reflect.TypeToken<List<com.example.base44.dataClass.add_to_cart_item>>() {}.type
-
-                     userOrders.forEach { entity ->
-                         try {
-                              val cartItems: List<com.example.base44.dataClass.add_to_cart_item> = gson.fromJson(entity.itemsJson, type) ?: emptyList()
-
-                              // Use the first item for summary
-                              val firstItem = cartItems.firstOrNull()
-
-                              // We need to flatten rows from all items if OrderItem expects a single list of rows,
-                              // or just pass empty if checking results/history logic handles it differently.
-                              // Assuming we just want to visual summary for now or aggregate rows.
-                              val allRows = cartItems.flatMap { it.rows }
-
-                              val item = OrderItem(
-                                  invoiceNumber = entity.invoiceNumber ?: "",
-                                  status = entity.status ?: "Pending",
-                                  dateAdded = entity.createdDate ?: "",
-                                  timestamp = parseTimestamp(entity.createdDate),
-                                  totalAmount = entity.totalAmount?.toString() ?: "0.00",
-                                  rows = allRows,
-                                  productName = firstItem?.productName ?: "Multiple Items",
-                                  productImage = firstItem?.drawableName ?: ""
-                              )
-                              orders.add(item)
-                         } catch (e: Exception) {
-                             android.util.Log.e("ORDERS_API", "Error parsing order items: ${e.message}")
-                             // FALLBACK: Add the order anyway so it shows in the list
-                             val fallbackItem = OrderItem(
-                                  invoiceNumber = entity.invoiceNumber ?: "Unknown",
-                                  status = entity.status ?: "Pending",
-                                  dateAdded = entity.createdDate ?: "",
-                                  timestamp = parseTimestamp(entity.createdDate),
-                                  totalAmount = entity.totalAmount?.toString() ?: "0.00",
-                                  rows = emptyList(),
-                                  productName = "Order Details (Parse Error)",
-                                  productImage = ""
-                             )
-                             orders.add(fallbackItem)
-                         }
-                     }
-
-                     filterOrders() // Update UI
-
-                 } else {
-                     android.util.Log.e("ORDERS_API", "Failed to load orders: ${response.code()}")
-                 }
-             }
-
-             override fun onFailure(call: retrofit2.Call<List<com.example.base44.dataClass.api.OrderEntity>>, t: Throwable) {
-                 android.util.Log.e("ORDERS_API", "Network error loading orders", t)
-             }
-        })
-    }
+//    private fun loadOrdersFromApi() {
+//        val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
+//        val userId = session.getUserId()
+//
+//        if (userId.isNullOrEmpty()) {
+//             android.widget.Toast.makeText(context, "Please login to view orders", android.widget.Toast.LENGTH_SHORT).show()
+//             return
+//        }
+//
+//        com.example.base44.network.RetrofitClient.instance.getOrders().enqueue(object : retrofit2.Callback<List<com.example.base44.dataClass.api.OrderEntity>> {
+//             override fun onResponse(
+//                 call: retrofit2.Call<List<com.example.base44.dataClass.api.OrderEntity>>,
+//                 response: retrofit2.Response<List<com.example.base44.dataClass.api.OrderEntity>>
+//             ) {
+//                 if (response.isSuccessful && response.body() != null) {
+//                     val allOrders = response.body()!!
+//                     val userEmail = session.getEmail()
+//
+//                     // Client-side filtering (Check both ID and createdBy/Email)
+//                     // DEBUG LOGGING
+//                     android.util.Log.d("ORDERS_DEBUG", "Fetched ${allOrders.size} orders from API")
+//                     android.util.Log.d("ORDERS_DEBUG", "Current User ID: $userId, Email: $userEmail")
+//
+//                     // TEMPORARY DEBUG: Show ALL orders to verify fetch works
+//                     val userOrders = allOrders
+//
+//                     /*
+//                     val userOrders = allOrders.filter {
+//                         val matchId = (it.userId == userId)
+//                         val matchEmail = (!it.createdBy.isNullOrEmpty() && !userEmail.isNullOrEmpty() && it.createdBy == userEmail)
+//                         if (matchId || matchEmail) {
+//                             true
+//                         } else {
+//                             // Log the first few that don't match to trace why
+//                             // android.util.Log.d("ORDERS_DEBUG", "Skipping Order: ID=${it.userId}, CreatedBy=${it.createdBy}")
+//                             false
+//                         }
+//                     }
+//                     */
+//                     android.util.Log.d("ORDERS_DEBUG", "Filtered down to ${userOrders.size} orders for user")
+//
+//                     orders.clear()
+//
+//                     val gson = com.google.gson.Gson()
+//                     val type = object : com.google.gson.reflect.TypeToken<List<com.example.base44.dataClass.add_to_cart_item>>() {}.type
+//
+//                     userOrders.forEach { entity ->
+//                         try {
+//                              val cartItems: List<com.example.base44.dataClass.add_to_cart_item> = gson.fromJson(entity.itemsJson, type) ?: emptyList()
+//
+//                              // Use the first item for summary
+//                              val firstItem = cartItems.firstOrNull()
+//
+//                              // We need to flatten rows from all items if OrderItem expects a single list of rows,
+//                              // or just pass empty if checking results/history logic handles it differently.
+//                              // Assuming we just want to visual summary for now or aggregate rows.
+//                              val allRows = cartItems.flatMap { it.rows }
+//
+//                              val item = OrderItem(
+//                                  invoiceNumber = entity.invoiceNumber ?: "",
+//                                  status = entity.status ?: "Pending",
+//                                  dateAdded = entity.createdDate ?: "",
+//                                  timestamp = parseTimestamp(entity.createdDate),
+//                                  totalAmount = entity.totalAmount?.toString() ?: "0.00",
+//                                  rows = allRows,
+//                                  productName = firstItem?.productName ?: "Multiple Items",
+//                                  productImage = firstItem?.drawableName ?: ""
+//                              )
+//                              orders.add(item)
+//                         } catch (e: Exception) {
+//                             android.util.Log.e("ORDERS_API", "Error parsing order items: ${e.message}")
+//                             // FALLBACK: Add the order anyway so it shows in the list
+//                             val fallbackItem = OrderItem(
+//                                  invoiceNumber = entity.invoiceNumber ?: "Unknown",
+//                                  status = entity.status ?: "Pending",
+//                                  dateAdded = entity.createdDate ?: "",
+//                                  timestamp = parseTimestamp(entity.createdDate),
+//                                  totalAmount = entity.totalAmount?.toString() ?: "0.00",
+//                                  rows = emptyList(),
+//                                  productName = "Order Details (Parse Error)",
+//                                  productImage = ""
+//                             )
+//                             orders.add(fallbackItem)
+//                         }
+//                     }
+//
+//                     filterOrders() // Update UI
+//
+//                 } else {
+//                     android.util.Log.e("ORDERS_API", "Failed to load orders: ${response.code()}")
+//                 }
+//             }
+//
+//             override fun onFailure(call: retrofit2.Call<List<com.example.base44.dataClass.api.OrderEntity>>, t: Throwable) {
+//                 android.util.Log.e("ORDERS_API", "Network error loading orders", t)
+//             }
+//        })
+//    }
 
     private fun parseTimestamp(dateString: String?): Long {
         if (dateString.isNullOrEmpty()) return System.currentTimeMillis()
