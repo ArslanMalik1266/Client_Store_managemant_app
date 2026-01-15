@@ -40,7 +40,7 @@ class CartAdapter(
         val item = cartList[position]
 
         holder.productName.text = item.productName
-        holder.productCode.text = item.productCode
+        holder.productCode.text = item.productCode.toString()
         holder.invoiceNumber.text = item.tempInvoice?.let { "INV No: $it" } ?: "INV No: ---"
         val resId = holder.itemView.context.resources.getIdentifier(
             item.drawableName, "drawable", holder.itemView.context.packageName

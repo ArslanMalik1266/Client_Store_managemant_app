@@ -1,9 +1,10 @@
 package com.example.base44.dataClass
 
 data class add_to_cart_item(
+    val productId: Int = 0,
     val productName: String,
     val bettingSlip: String? = null,
-    val productCode: Int,
+    val productCode: String,
     val raceDays: List<String> = emptyList(),
     val rows: List<CartRow>,
     val drawableName: String = "",

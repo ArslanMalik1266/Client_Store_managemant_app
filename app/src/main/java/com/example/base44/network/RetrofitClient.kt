@@ -42,13 +42,14 @@ object RetrofitClient {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    val instance: ApiService
-        get() = Retrofit.Builder()
+    val instance: ApiService by lazy {
+        Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
+    }
 
     val api: ApiService by lazy { instance }
 }

@@ -11,9 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.adaptor.CartAdapter
 import com.example.base44.dataClass.CartManager
-import com.example.base44.dataClass.add_to_cart_item
-import com.example.base44.dataClass.CartRow
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.base44.network.RetrofitClient
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
 import retrofit2.Call
@@ -61,7 +59,6 @@ class BottomSheetCart(
     }
 
     private fun setupButtons() {
-
         btnClear.setOnClickListener {
             CartManager.clearCart()
             adapter.updateData(CartManager.cartItems)
@@ -102,17 +99,17 @@ class BottomSheetCart(
             timeZone = TimeZone.getTimeZone("GMT+8")
         }.format(Date())
 
-        // Prepare JSON for server directly from add_to_cart_item
+        // Safe items JSON
         val itemsJson = CartManager.cartItems.flatMap { cartItem ->
             cartItem.rows.flatMap { row ->
                 row.selectedCategories.map { category ->
                     mapOf(
-                        "product_id" to cartItem.productCode.filter { it.isDigit() }.toIntOrNull(),
-                        "product_code" to cartItem.productCode,
+                        "product_id" to cartItem.productId,      // CORRECT: Numeric for Server
+                        "product_code" to cartItem.productCode,   // CORRECT: String for History/UI
                         "product_name" to cartItem.productName,
                         "numbers" to row.number,
                         "bet_type" to category,
-                        "bet_amount" to row.amount.toDoubleOrNull(),
+                        "bet_amount" to (row.amount.toDoubleOrNull() ?: 0.0),
                         "quantity" to row.qty,
                         "product_image" to cartItem.drawableName
                     )
@@ -135,21 +132,21 @@ class BottomSheetCart(
             "status" to "completed"
         )
 
-        // Optional log for debugging 422 errors
+        // Log JSON for debugging
         android.util.Log.d("ORDER_JSON", Gson().toJson(orderRequest))
 
-        com.example.base44.network.RetrofitClient.instance.createOrderRaw(orderRequest)
+        // ✅ Fixed Retrofit call: Sending numeric product_id and string product_code
+        RetrofitClient.instance.createOrderRaw(orderRequest)
             .enqueue(object : Callback<Map<String, Any>> {
-                override fun onResponse(
-                    call: Call<Map<String, Any>>,
-                    response: Response<Map<String, Any>>
-                ) {
+                override fun onResponse(call: Call<Map<String, Any>>, response: Response<Map<String, Any>>) {
+                    // CRASH FIX: Check if fragment is still attached
+                    if (!isAdded || context == null) return
+
                     btnProceed.isEnabled = true
                     btnProceed.text = "Proceed"
 
                     if (response.isSuccessful) {
-                        Toast.makeText(requireContext(), "Order placed successfully!", Toast.LENGTH_SHORT).show()
-
+                        Toast.makeText(context, "Order placed successfully!", Toast.LENGTH_SHORT).show()
                         (activity as? com.example.base44.MainActivity)?.fetchUserProfile()
                         CartManager.clearCart()
                         adapter.updateData(CartManager.cartItems)
@@ -158,15 +155,18 @@ class BottomSheetCart(
                     } else {
                         val err = response.errorBody()?.string()
                         android.util.Log.e("ORDER_API", "Failed to create order: $err")
-                        Toast.makeText(requireContext(), "Failed to place order: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Failed to place order: ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Map<String, Any>>, t: Throwable) {
+                    // CRASH FIX: Check if fragment is still attached
+                    if (!isAdded || context == null) return
+
                     btnProceed.isEnabled = true
                     btnProceed.text = "Proceed"
                     android.util.Log.e("ORDER_API", "Network error", t)
-                    Toast.makeText(requireContext(), "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }

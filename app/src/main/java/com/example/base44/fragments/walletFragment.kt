@@ -143,11 +143,11 @@ class walletFragment : Fragment() {
         val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
         val userId = session.getUserId()
         userId?.let { viewModel.fetchUserProfile(it) }
-        viewModel.fetchOrders()
+//        viewModel.fetchOrders()
     }
 
     fun refreshOrdersAndCredit() {
-        viewModel.fetchOrders()
+//        viewModel.fetchOrders()
     }
 
 

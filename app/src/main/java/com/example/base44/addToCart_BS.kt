@@ -80,14 +80,14 @@ class MyBottomSheet() : BottomSheetDialogFragment() {
             }
 
             singleProduct?.let {
-                val cartItem = collectData(it.title, it.drawableName.toString(), it.code)
+                val cartItem = collectData(it.productId, it.title, it.drawableName.toString(), it.code)
                 cartItem.tempInvoice = generateTempInvoice()
                 CartManager.addItem(cartItem)
                 it.isAddedToCart = false
             }
 
             multipleProducts?.forEach { product ->
-                val cartItem = collectData(product.title, product.drawableName.toString(), product.code)
+                val cartItem = collectData(product.productId, product.title, product.drawableName.toString(), product.code)
                 cartItem.tempInvoice = generateTempInvoice()
                 CartManager.addItem(cartItem)
             }
@@ -290,7 +290,7 @@ class MyBottomSheet() : BottomSheetDialogFragment() {
 
 
 
-    private fun collectData(name: String, image: String, code: String): add_to_cart_item {
+    private fun collectData(id: Int, name: String, image: String, code: String): add_to_cart_item {
         val tableLayout = view?.findViewById<TableLayout>(R.id.tableLayout)
         val raceDaysLayout = view?.findViewById<LinearLayout>(R.id.raceDaysLayout)
 
@@ -337,6 +337,7 @@ class MyBottomSheet() : BottomSheetDialogFragment() {
         val bettingSlipText = view?.findViewById<EditText>(R.id.etPasteSlip)?.text?.toString()?.takeIf { it.isNotBlank() }
 
         return add_to_cart_item(
+            productId = id,
             productName = name,
             bettingSlip = bettingSlipText,
             raceDays = selectedRaceDays,

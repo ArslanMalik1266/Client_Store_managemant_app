@@ -42,7 +42,7 @@ interface ApiService {
     fun getProfile(@retrofit2.http.Path("id") id: String): Call<UserData>
 
     @POST("entities/Order")
-    fun createOrderRaw(@Body orderData: Map<String, Any>): Call<Map<String, Any>>
+    fun createOrderRaw(@Body orderData: Map<String, @JvmSuppressWildcards Any>): Call<Map<String, Any>>
 
     // Payment Transactions
     @GET("transactions")
@@ -65,6 +65,6 @@ interface ApiService {
     ): Call<PaymentTransaction>
 
     @POST("entities/Order")
-    fun createOrder(@Body request: com.example.base44.dataClass.OrderRequest): Call<OrderEntity>
+    fun createOrder(@Body request: com.example.base44.dataClass.add_to_cart_item): Call<OrderEntity>
 }
 
