@@ -12,7 +12,7 @@ import com.example.base44.dataClass.api.RegisterRequest
 import com.example.base44.dataClass.api.UserData
 import com.example.base44.dataClass.api.VerifyRequest
 import com.example.base44.dataClass.api.PaymentTransaction
-import com.example.base44.dataClass.api.OrderEntity
+import com.example.base44.dataClass.api.OrderRequestNew
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
@@ -67,6 +67,6 @@ interface ApiService {
     ): Call<PaymentTransaction>
 
     @GET("entities/Order")
-    suspend fun getOrders(): Response<List<OrderEntity>>
+    suspend fun getOrders(): Response<List<OrderRequestNew>>
 }
 

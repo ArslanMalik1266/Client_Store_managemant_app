@@ -14,8 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.MainActivity
 import com.example.base44.R
-import com.example.base44.ViewModel.OrderViewModel
-import com.example.base44.ViewModel.OrderViewModelFactory
 import com.example.base44.adaptor.OrdersAdapter
 import com.example.base44.dataClass.OrderItem
 import com.example.base44.dataClass.isThisWeek
@@ -23,6 +21,8 @@ import com.example.base44.dataClass.isToday
 import com.example.base44.dataClass.isYesterday
 import com.example.base44.repository.OrderRepository
 import com.example.base44.network.RetrofitClient
+import com.example.base44.viewmodels.OrderViewModel
+import com.example.base44.viewmodels.OrderViewModelFactory
 import com.google.android.material.chip.Chip
 
 class ordersFragment : Fragment() {
@@ -63,9 +63,9 @@ class ordersFragment : Fragment() {
 
         // Observe API data
         viewModel.orders.observe(viewLifecycleOwner) { orderList ->
-            Log.d("ORDERS_DEBUG", "Orders fetched: ${orderList.size}")
             orders.clear()
             orders.addAll(orderList)
+            adapter.notifyDataSetChanged()
             filterOrders()
         }
 

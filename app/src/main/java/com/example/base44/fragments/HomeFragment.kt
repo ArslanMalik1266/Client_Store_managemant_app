@@ -16,8 +16,9 @@ import com.example.base44.R
 import com.example.base44.adaptor.ProductAdapter
 import com.example.base44.network.RetrofitClient
 import com.example.base44.repository.ProductsRepository
-import com.example.base44.viewmodel.ProductsViewModel
-import com.example.base44.viewmodel.ProductsViewModelFactory
+import com.example.base44.viewmodels.ProductsViewModel
+import com.example.base44.viewmodels.ProductsViewModelFactory
+
 
 class HomeFragment : Fragment() {
 

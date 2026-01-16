@@ -1,5 +1,6 @@
 package com.example.base44.adaptor
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,24 +49,17 @@ class OrdersAdapter(
         holder.statusTv.text = item.status
         holder.dateTv.text = item.dateAdded
         holder.raceDayTv.text = "Race day: ${item.raceDay}"
-
-        if (item.productImage.startsWith("http")) {
-            Glide.with(holder.itemView.context)
-                .load(item.productImage)
-                .into(holder.productImage)
-        } else {
-            val resId = holder.itemView.context.resources.getIdentifier(
-                item.productImage, "drawable", holder.itemView.context.packageName
-            )
-            if (resId != 0) holder.productImage.setImageResource(resId)
-        }
+        Glide.with(holder.itemView.context)
+            .load(item.productImage)
+            .placeholder(R.drawable.ic_launcher_foreground)
+            .error(R.drawable.ic_launcher_foreground)
+            .into(holder.productImage)
 
         holder.productName.text = item.productName
         holder.productCode.text = item.productCode
         holder.totalLabel.text = item.totalLabel
         holder.totalAmount.text = item.totalAmount
 
-        // RecyclerView for rows inside each order
         holder.rvRows.layoutManager = LinearLayoutManager(holder.itemView.context)
         holder.rvRows.adapter = TagAdapter(item.rows ?: emptyList())
     }

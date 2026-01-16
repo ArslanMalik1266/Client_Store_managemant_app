@@ -1,5 +1,7 @@
 package com.example.base44.dataClass
 
+import com.google.gson.annotations.SerializedName
+
 data class add_to_cart_item(
     val productId: Int = 0,
     val productName: String,
@@ -15,8 +17,9 @@ data class add_to_cart_item(
 )
 
 data class CartRow(
-    val number: String,
+    val number: String?,
     val amount: String,
     val selectedCategories: List<String>,
-    val qty: Int = 1
-)
+    val qty: Int = 1,
+
+    )

@@ -104,36 +104,43 @@ class BottomSheetCart(
         val customerName = userName
         val selectedDays = CartManager.cartItems.flatMap { it.raceDays }.distinct()
 
-        // ONLY main product info (no rows)
-        val itemsJson = CartManager.cartItems.map { cartItem ->
-            mapOf(
-                "product_id" to cartItem.productId,
-                "product_code" to cartItem.productCode,
-                "product_name" to cartItem.productName,
-                "product_image" to cartItem.drawableName,
-                "temp_invoice" to cartItem.tempInvoice.orEmpty(),
-                "final_invoice" to cartItem.finalInvoice.orEmpty(),
-                "total_amount" to cartItem.totalAmount
-            )
+        val itemsList = CartManager.cartItems.flatMap { cartItem ->
+            cartItem.rows.map { row ->
+                mapOf(
+                    "product_id" to cartItem.productId, // Int
+                    "product_name" to cartItem.productName,
+                    "product_code" to cartItem.productCode,
+                    "product_image" to cartItem.drawableName,
+                    "numbers" to row.number,
+                    "bet_amount" to (row.amount.toDoubleOrNull() ?: 0.0), // Double
+                    "bet_type" to row.selectedCategories.joinToString(","), // String representation if server expects string
+                    "quantity" to row.qty
+                )
+            }
         }
 
-        val orderRequest = mapOf(
+        val firstItem = CartManager.cartItems.firstOrNull()
+        val orderRequest = mutableMapOf<String, Any>(
             "reference_number" to invoiceNum,
             "customer_name" to customerName,
             "user_name" to userName,
             "selected_days" to if (selectedDays.isNotEmpty()) selectedDays
             else listOf(SimpleDateFormat("EEE").format(Date())),
             "order_date" to gmt8Date,
-            "items" to itemsJson,
+            "items" to itemsList,
             "total_amount" to totalBill,
-            "status" to "completed"
+            "status" to "completed",
+            "product_id" to (firstItem?.productId ?: 0),
+            "product_name" to (firstItem?.productName ?: ""),
+            "product_code" to (firstItem?.productCode ?: ""),
+            "product_image" to (firstItem?.drawableName ?: "")
         )
 
         val gson = Gson()
-        android.util.Log.d("ORDER_DEBUG", "Order JSON: ${gson.toJson(orderRequest)}")
+        android.util.Log.d("ORDER_DEBUG", "Final Order Request: ${gson.toJson(orderRequest)}")
 
         // Send to server
-        RetrofitClient.instance.createOrderRaw(orderRequest)
+        RetrofitClient.instance.createOrderRaw(orderRequest as Map<String, @JvmSuppressWildcards Any>)
             .enqueue(object : Callback<Map<String, Any>> {
                 override fun onResponse(call: Call<Map<String, Any>>, response: Response<Map<String, Any>>) {
                     if (!isAdded || context == null) return
@@ -170,4 +177,8 @@ class BottomSheetCart(
         val total = CartManager.cartItems.sumOf { it.totalAmount }
         totalText.text = "Total RM: %.2f".format(total)
     }
+
+
+
+
 }

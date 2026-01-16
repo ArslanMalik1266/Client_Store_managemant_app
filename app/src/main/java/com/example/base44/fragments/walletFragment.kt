@@ -25,8 +25,8 @@ import com.example.base44.dataClass.isThisWeek
 import com.example.base44.dataClass.isToday
 import com.example.base44.dataClass.isYesterday
 import com.example.base44.repository.WalletRepository
-import com.example.base44.viewmodel.WalletViewModel
-import com.example.base44.viewmodel.WalletViewModelFactory
+import com.example.base44.viewmodels.WalletViewModel
+import com.example.base44.viewmodels.WalletViewModelFactory
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup

@@ -35,7 +35,7 @@ class TagAdapter(
     override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
         val item = list[position]
 
-        holder.cartItemNumber.text = item.number.toString()
+        holder.cartItemNumber.text = item.number ?: "-"
         holder.cartRm.text = item.amount
         holder.cardB.visibility = View.GONE
         holder.cardS.visibility = View.GONE
