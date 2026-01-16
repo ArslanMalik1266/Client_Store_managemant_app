@@ -67,7 +67,7 @@ class OrdersAdapter(
 
         // RecyclerView for rows inside each order
         holder.rvRows.layoutManager = LinearLayoutManager(holder.itemView.context)
-        holder.rvRows.adapter = TagAdapter(item.rows)
+        holder.rvRows.adapter = TagAdapter(item.rows ?: emptyList())
     }
 
     override fun getItemCount(): Int = orderList.size

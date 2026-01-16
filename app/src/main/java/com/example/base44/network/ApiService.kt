@@ -2,10 +2,12 @@ package com.example.base44.network
 
 import com.example.base44.dataClass.CreateTransactionRequest
 import com.example.base44.dataClass.Order
+import com.example.base44.dataClass.OrderItem
+import com.example.base44.dataClass.Product
+import com.example.base44.dataClass.ProductEntity
 import com.example.base44.dataClass.api.ResendOtpRequest
 import com.example.base44.dataClass.api.AuthResponse
 import com.example.base44.dataClass.api.LoginRequest
-import com.example.base44.dataClass.api.ProductEntity
 import com.example.base44.dataClass.api.RegisterRequest
 import com.example.base44.dataClass.api.UserData
 import com.example.base44.dataClass.api.VerifyRequest
@@ -64,7 +66,7 @@ interface ApiService {
         @Body body: PaymentTransaction
     ): Call<PaymentTransaction>
 
-    @POST("entities/Order")
-    fun createOrder(@Body request: com.example.base44.dataClass.add_to_cart_item): Call<OrderEntity>
+    @GET("entities/Order")
+    suspend fun getOrders(): Response<List<OrderEntity>>
 }
 

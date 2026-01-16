@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.adaptor.CartAdapter
+import com.example.base44.adaptor.utils.SessionManager
 import com.example.base44.dataClass.CartManager
 import com.example.base44.network.RetrofitClient
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -83,7 +84,7 @@ class BottomSheetCart(
     }
 
     private fun saveOrdersAndFinalize(totalBill: Double) {
-        val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
+        val session = SessionManager(requireContext())
         val userId = session.getUserId()
 
         if (userId.isNullOrEmpty()) {
@@ -99,47 +100,42 @@ class BottomSheetCart(
             timeZone = TimeZone.getTimeZone("GMT+8")
         }.format(Date())
 
-        // Safe items JSON
-        val itemsJson = CartManager.cartItems.flatMap { cartItem ->
-            cartItem.rows.flatMap { row ->
-                row.selectedCategories.map { category ->
-                    mapOf(
-                        "product_id" to cartItem.productId,      // CORRECT: Numeric for Server
-                        "product_code" to cartItem.productCode,   // CORRECT: String for History/UI
-                        "product_name" to cartItem.productName,
-                        "numbers" to row.number,
-                        "bet_type" to category,
-                        "bet_amount" to (row.amount.toDoubleOrNull() ?: 0.0),
-                        "quantity" to row.qty,
-                        "product_image" to cartItem.drawableName
-                    )
-                }
-            }
-        }
-
+        val userName = session.getUsername() ?: "Customer"
+        val customerName = userName
         val selectedDays = CartManager.cartItems.flatMap { it.raceDays }.distinct()
-        val customerName = CartManager.cartItems.firstOrNull()?.productName ?: "Customer"
-        val userName = session.getUsername() ?: customerName
+
+        // ONLY main product info (no rows)
+        val itemsJson = CartManager.cartItems.map { cartItem ->
+            mapOf(
+                "product_id" to cartItem.productId,
+                "product_code" to cartItem.productCode,
+                "product_name" to cartItem.productName,
+                "product_image" to cartItem.drawableName,
+                "temp_invoice" to cartItem.tempInvoice.orEmpty(),
+                "final_invoice" to cartItem.finalInvoice.orEmpty(),
+                "total_amount" to cartItem.totalAmount
+            )
+        }
 
         val orderRequest = mapOf(
             "reference_number" to invoiceNum,
             "customer_name" to customerName,
             "user_name" to userName,
-            "selected_days" to if (selectedDays.isNotEmpty()) selectedDays else listOf(SimpleDateFormat("EEE").format(Date())),
+            "selected_days" to if (selectedDays.isNotEmpty()) selectedDays
+            else listOf(SimpleDateFormat("EEE").format(Date())),
             "order_date" to gmt8Date,
             "items" to itemsJson,
             "total_amount" to totalBill,
             "status" to "completed"
         )
 
-        // Log JSON for debugging
-        android.util.Log.d("ORDER_JSON", Gson().toJson(orderRequest))
+        val gson = Gson()
+        android.util.Log.d("ORDER_DEBUG", "Order JSON: ${gson.toJson(orderRequest)}")
 
-        // ✅ Fixed Retrofit call: Sending numeric product_id and string product_code
+        // Send to server
         RetrofitClient.instance.createOrderRaw(orderRequest)
             .enqueue(object : Callback<Map<String, Any>> {
                 override fun onResponse(call: Call<Map<String, Any>>, response: Response<Map<String, Any>>) {
-                    // CRASH FIX: Check if fragment is still attached
                     if (!isAdded || context == null) return
 
                     btnProceed.isEnabled = true
@@ -147,20 +143,18 @@ class BottomSheetCart(
 
                     if (response.isSuccessful) {
                         Toast.makeText(context, "Order placed successfully!", Toast.LENGTH_SHORT).show()
-                        (activity as? com.example.base44.MainActivity)?.fetchUserProfile()
                         CartManager.clearCart()
                         adapter.updateData(CartManager.cartItems)
                         updateTotal()
                         dismiss()
                     } else {
                         val err = response.errorBody()?.string()
-                        android.util.Log.e("ORDER_API", "Failed to create order: $err")
+                        android.util.Log.e("ORDER_API", "Failed: $err")
                         Toast.makeText(context, "Failed to place order: ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Map<String, Any>>, t: Throwable) {
-                    // CRASH FIX: Check if fragment is still attached
                     if (!isAdded || context == null) return
 
                     btnProceed.isEnabled = true
@@ -170,6 +164,7 @@ class BottomSheetCart(
                 }
             })
     }
+
 
     private fun updateTotal() {
         val total = CartManager.cartItems.sumOf { it.totalAmount }
