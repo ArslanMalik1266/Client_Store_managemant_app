@@ -42,10 +42,11 @@ class CartAdapter(
         holder.productName.text = item.productName
         holder.productCode.text = item.productCode.toString()
         holder.invoiceNumber.text = item.tempInvoice?.let { "INV No: $it" } ?: "INV No: ---"
-        val resId = holder.itemView.context.resources.getIdentifier(
-            item.drawableName, "drawable", holder.itemView.context.packageName
-        )
-        holder.cartImage.setImageResource(resId)
+        Glide.with(holder.itemView.context)
+            .load(item.drawableName)
+            .placeholder(R.drawable.headphones_image)
+            .error(R.drawable.headphones_image)
+            .into(holder.cartImage)
 
         val dateText = if (item.raceDays.isNotEmpty()) {
             item.raceDays.last()
