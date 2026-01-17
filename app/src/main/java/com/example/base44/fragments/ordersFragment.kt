@@ -18,12 +18,14 @@ import com.example.base44.adaptor.OrdersAdapter
 import com.example.base44.dataClass.OrderItem
 import com.example.base44.dataClass.isThisWeek
 import com.example.base44.dataClass.isToday
+import com.example.base44.dataClass.isWinner
 import com.example.base44.dataClass.isYesterday
 import com.example.base44.repository.OrderRepository
 import com.example.base44.network.RetrofitClient
 import com.example.base44.viewmodels.OrderViewModel
 import com.example.base44.viewmodels.OrderViewModelFactory
 import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 
 class ordersFragment : Fragment() {
 
@@ -41,6 +43,7 @@ class ordersFragment : Fragment() {
     private lateinit var chipThisWeek: Chip
     private lateinit var chipAll: Chip
     private lateinit var chipWinner: Chip
+    private lateinit var chipGroupFilter: ChipGroup
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,11 +64,18 @@ class ordersFragment : Fragment() {
         val factory = OrderViewModelFactory(repo)
         viewModel = ViewModelProvider(this, factory)[OrderViewModel::class.java]
 
-        // Observe API data
+        // Observe loading state
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            view.findViewById<android.widget.ProgressBar>(R.id.progressBar)?.visibility =
+                if (isLoading) View.VISIBLE else View.GONE
+            
+            view.findViewById<androidx.core.widget.NestedScrollView>(R.id.contentScrollView)?.visibility =
+                if (isLoading) View.GONE else View.VISIBLE
+        }
+
         viewModel.orders.observe(viewLifecycleOwner) { orderList ->
             orders.clear()
             orders.addAll(orderList)
-            adapter.notifyDataSetChanged()
             filterOrders()
         }
 
@@ -122,9 +132,11 @@ class ordersFragment : Fragment() {
         chipThisWeek = view.findViewById(R.id.chipThisWeek)
         chipAll = view.findViewById(R.id.chipAll)
         chipWinner = view.findViewById(R.id.chipWinner)
+        chipGroupFilter = view.findViewById(R.id.chipGroupFilter)
 
-        val chips = listOf(chipToday, chipYesterday, chipThisWeek, chipAll, chipWinner)
-        chips.forEach { chip -> chip.setOnClickListener { filterOrders() } }
+        chipGroupFilter.setOnCheckedChangeListener { group, checkedId ->
+            filterOrders()
+        }
     }
 
     private fun filterOrders() {
@@ -132,6 +144,7 @@ class ordersFragment : Fragment() {
             chipToday.isChecked -> orders.filter { it.isToday() }
             chipYesterday.isChecked -> orders.filter { it.isYesterday() }
             chipThisWeek.isChecked -> orders.filter { it.isThisWeek() }
+            chipWinner.isChecked -> orders.filter { it.isWinner() }
             chipAll.isChecked -> orders
             else -> orders
         }
@@ -144,10 +157,17 @@ class ordersFragment : Fragment() {
 
     private fun updateStats(orderList: List<OrderItem>) {
         tvOrdersCount.text = orderList.size.toString()
-        totalOrdersTv.text = "Total Orders: ${orderList.size}"
+        totalOrdersTv.text = "Total Check Orders = ${orders.size}"
 
         val total = orderList.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
         tvTotalSalesAmount.text = "RM %.2f".format(total)
+
+        // Winning Stats logic
+        val winningOrders = orders.filter { it.isWinner() }
+        val winningTotal = winningOrders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
+        
+        view?.findViewById<TextView>(R.id.tvWinningAmount)?.text = "RM %.2f".format(winningTotal)
+        view?.findViewById<TextView>(R.id.tvWinningStats)?.text = "Winning Orders = ${winningOrders.size} "
     }
 
     fun generateFinalInvoice(): String = "INV-${System.currentTimeMillis()}"

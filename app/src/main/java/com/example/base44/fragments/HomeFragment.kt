@@ -78,6 +78,15 @@ class HomeFragment : Fragment() {
             }
         })
 
+        // Observe Loading State
+        viewModel.loading.observe(viewLifecycleOwner, Observer { isLoading ->
+            val progressBar = requireView().findViewById<android.widget.ProgressBar>(R.id.progressBar)
+            val rvProducts = requireView().findViewById<RecyclerView>(R.id.rvProducts)
+            
+            progressBar?.visibility = if (isLoading) View.VISIBLE else View.GONE
+            rvProducts?.visibility = if (isLoading) View.GONE else View.VISIBLE
+        })
+
         // Observe Error
         viewModel.error.observe(viewLifecycleOwner, Observer { message ->
             if (!message.isNullOrEmpty()) {

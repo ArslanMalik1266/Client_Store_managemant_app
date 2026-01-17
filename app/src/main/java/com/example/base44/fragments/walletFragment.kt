@@ -123,12 +123,30 @@ class walletFragment : Fragment() {
             commissionRateText.text = "$commissionRate%"
             creditLimit = user.creditLimit ?: 5000.0
             currentAvailableBalance = user.currentBalance ?: 0.0
+
             updateBalanceUI()
+        }
+
+        // Observe loading state
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            view.findViewById<ProgressBar>(R.id.loadingProgressBar)?.visibility =
+                if (isLoading) View.VISIBLE else View.GONE
+            
+            view.findViewById<androidx.core.widget.NestedScrollView>(R.id.contentScrollView)?.visibility =
+                if (isLoading) View.GONE else View.VISIBLE
         }
 
         // Observe orders for RecyclerView & Stats
         viewModel.simpleOrders.observe(viewLifecycleOwner) { simpleOrders ->
             adapter.updateData(simpleOrders)
+        }
+
+        // Observe filtered stats
+        viewModel.periodSales.observe(viewLifecycleOwner) { sales ->
+            tvPeriodSaleAmount.text = "RM %.2f".format(sales)
+        }
+        viewModel.periodCommission.observe(viewLifecycleOwner) { commission ->
+            tvPeriodCommissionAmount.text = "RM %.2f".format(commission)
         }
 
         return view
@@ -143,7 +161,7 @@ class walletFragment : Fragment() {
         val session = com.example.base44.adaptor.utils.SessionManager(requireContext())
         val userId = session.getUserId()
         userId?.let { viewModel.fetchUserProfile(it) }
-//        viewModel.fetchOrders()
+        viewModel.fetchOrders()
     }
 
     fun refreshOrdersAndCredit() {
@@ -180,22 +198,13 @@ class walletFragment : Fragment() {
     }
 
     private fun updateStats() {
-        val orders = viewModel.orders.value ?: emptyList()
-        val user = viewModel.userData.value
-        val outstandingDebt = user.outstandingDebt ?: 0.0
-        val commissionRate = user?.commissionRate?.toDouble() ?: 0.0
-        val totalSales = orders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
-        tvPeriodSaleAmount.text = "RM %.2f".format(totalSales)
-
-        val commission = totalSales * (commissionRate / 100)
-        tvPeriodCommissionAmount.text = "RM %.2f".format(commission)
-
-        val weekOrders = orders.filter { it.isThisWeek() }
-        val weekTotal = weekOrders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
-        val weekCommission = weekTotal * (commissionRate / 100)
-        weekCommissionText.text = "RM %.2f".format(weekCommission)
-        creditDueWeekText.text = "RM %.2f".format(outstandingDebt)
+        val user = viewModel.userData.value ?: return
+        
+        // Stats are now handled by observers for real-time filtering
+        // tvPeriodSaleAmount and tvPeriodCommissionAmount are observed in onCreateView
+        
         weekCommissionText.text = "RM %.2f".format(user.weeklyCommission ?: 0.0)
+        creditDueWeekText.text = "RM %.2f".format(user.outstandingDebt ?: 0.0)
 
         val nextMonday = getNextMonday()
         view?.findViewById<TextView>(R.id.comissionText)?.text = "Pay on $nextMonday"
@@ -207,7 +216,10 @@ class walletFragment : Fragment() {
             "N/A"
         }
 
-        lastCommissionAmount.text = "RM %.2f".format(user.lastCommissionPaid)
+        lastCommissionAmount.text = "RM %.2f".format(user.lastCommissionPaid ?: 0.0)
+        
+        // Also update commission rate text just in case
+        commissionRateText.text = "${user.commissionRate ?: 0}%"
     }
 
 

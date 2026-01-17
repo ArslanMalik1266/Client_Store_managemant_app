@@ -9,12 +9,11 @@ import com.example.base44.R
 import com.example.base44.dataClass.ResultItem
 
 class ResultAdapter(
-    private val results: List<ResultItem>
+    private var results: List<ResultItem> = emptyList()
 ) : RecyclerView.Adapter<ResultAdapter.ResultViewHolder>() {
 
-    class ResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class ResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        // Header
         private val title: TextView = itemView.findViewById(R.id.result_ItemHeading)
         private val date: TextView = itemView.findViewById(R.id.date_resultItem)
 
@@ -49,22 +48,17 @@ class ResultAdapter(
             title.text = item.title
             date.text = item.date
             firstPrizeNumber.text = item.firstPrize
-
             secondPrize.text = item.secondPrize
             thirdPrize.text = item.thirdPrize
 
             // Fill SPECIAL numbers
             item.specialNumbers.forEachIndexed { index, number ->
-                if (index < specialViews.size) {
-                    specialViews[index].text = number
-                }
+                if (index < specialViews.size) specialViews[index].text = number
             }
 
             // Fill CONSOLATION numbers
             item.consolationNumbers.forEachIndexed { index, number ->
-                if (index < consolationViews.size) {
-                    consolationViews[index].text = number
-                }
+                if (index < consolationViews.size) consolationViews[index].text = number
             }
         }
     }
@@ -79,5 +73,11 @@ class ResultAdapter(
 
     override fun onBindViewHolder(holder: ResultViewHolder, position: Int) {
         holder.bind(results[position])
+    }
+
+    // ✅ Professional: Update data function
+    fun updateData(newList: List<ResultItem>) {
+        results = newList
+        notifyDataSetChanged()
     }
 }

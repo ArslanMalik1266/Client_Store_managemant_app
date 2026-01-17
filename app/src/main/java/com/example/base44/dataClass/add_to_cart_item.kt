@@ -21,5 +21,4 @@ data class CartRow(
     val amount: String,
     val selectedCategories: List<String>,
     val qty: Int = 1,
-
     )

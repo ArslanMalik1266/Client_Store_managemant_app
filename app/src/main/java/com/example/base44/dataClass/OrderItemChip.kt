@@ -14,29 +14,30 @@ private fun String.toDate(): Date? {
 }
 
 fun OrderItem.isToday(): Boolean {
-    val orderDate = this.dateAdded.toDate() ?: return false
-    return sdf.format(Date()) == sdf.format(orderDate)
+    val calNow = Calendar.getInstance()
+    val calOrder = Calendar.getInstance().apply { timeInMillis = this@isToday.timestamp }
+    
+    return calNow.get(Calendar.YEAR) == calOrder.get(Calendar.YEAR) &&
+            calNow.get(Calendar.DAY_OF_YEAR) == calOrder.get(Calendar.DAY_OF_YEAR)
 }
 
 fun OrderItem.isYesterday(): Boolean {
-    val orderDate = this.dateAdded.toDate() ?: return false
+    val calYesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
+    val calOrder = Calendar.getInstance().apply { timeInMillis = this@isYesterday.timestamp }
 
-    val cal = Calendar.getInstance()
-    cal.add(Calendar.DAY_OF_YEAR, -1)
-
-    return sdf.format(cal.time) == sdf.format(orderDate)
+    return calYesterday.get(Calendar.YEAR) == calOrder.get(Calendar.YEAR) &&
+            calYesterday.get(Calendar.DAY_OF_YEAR) == calOrder.get(Calendar.DAY_OF_YEAR)
 }
 
 fun OrderItem.isThisWeek(): Boolean {
-    val orderDate = this.dateAdded.toDate() ?: return false
-
     val calNow = Calendar.getInstance()
-    val weekNow = calNow.get(Calendar.WEEK_OF_YEAR)
-    val yearNow = calNow.get(Calendar.YEAR)
+    val calOrder = Calendar.getInstance().apply { timeInMillis = this@isThisWeek.timestamp }
 
-    val calOrder = Calendar.getInstance()
-    calOrder.time = orderDate
+    return calNow.get(Calendar.YEAR) == calOrder.get(Calendar.YEAR) &&
+            calNow.get(Calendar.WEEK_OF_YEAR) == calOrder.get(Calendar.WEEK_OF_YEAR)
+}
 
-    return calOrder.get(Calendar.WEEK_OF_YEAR) == weekNow &&
-            calOrder.get(Calendar.YEAR) == yearNow
+fun OrderItem.isWinner(): Boolean {
+    val s = this.status.lowercase()
+    return s.contains("winner") || s.contains("won") || s.contains("winning")
 }

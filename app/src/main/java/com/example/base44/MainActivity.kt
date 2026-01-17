@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnAddToCartTop: Button
     private lateinit var session: SessionManager
     var userAvailableBalance: Double = 0.0
+    var currentUser: UserData? = null
 
     override fun onStart() {
         super.onStart()
@@ -77,17 +79,18 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: retrofit2.Call<UserData>, response: retrofit2.Response<UserData>) {
                 if (response.isSuccessful && response.body() != null) {
                     val user = response.body()!!
+                    currentUser = user
                     
                     // Update UI
                     val headerView = navView.getHeaderView(0)
                     val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
-                    // val tvDrawerEmail = headerView.findViewById<TextView>(R.id.tvEmail)
+                    val tvDrawerBalance = headerView.findViewById<TextView>(R.id.tvBalance)
 
-                    tvDrawerUsername.text = user.fullName ?: "User"
-                    // if (::tvDrawerEmail.isInitialized) tvDrawerEmail.text = user.email
+                    tvDrawerUsername.text = user.fullName ?: user.username ?: "User"
 
                     // Update Balance
                     userAvailableBalance = user.currentBalance ?: 0.0
+                    tvDrawerBalance.text = "Balance: RM %.2f".format(userAvailableBalance)
                     android.util.Log.d("MAIN_ACTIVITY", "Balance updated: $userAvailableBalance")
                 }
             }
@@ -119,8 +122,13 @@ class MainActivity : AppCompatActivity() {
     private fun setupToolbar() {
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_cart) {
-                BottomSheetCart(userAvailableBalance)
-                    .show(supportFragmentManager, "CartBottomSheet")
+                currentUser?.let { user ->
+                    BottomSheetCart(user)
+                        .show(supportFragmentManager, "CartBottomSheet")
+                } ?: run {
+                    Toast.makeText(this, "User profile loading... please wait", Toast.LENGTH_SHORT).show()
+                    fetchUserProfile()
+                }
                 true
             } else false
         }

@@ -6,6 +6,6 @@ data class ResultItem(
     val firstPrize: String,
     val secondPrize: String,
     val thirdPrize: String,
-    val specialNumbers: List<String>,
-    val consolationNumbers: List<String>
+    val specialNumbers: List<String> = emptyList(),
+    val consolationNumbers: List<String> = emptyList()
 )

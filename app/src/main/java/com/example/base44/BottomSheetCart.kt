@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.adaptor.CartAdapter
 import com.example.base44.adaptor.utils.SessionManager
 import com.example.base44.dataClass.CartManager
+import com.example.base44.dataClass.api.UserData
 import com.example.base44.network.RetrofitClient
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
@@ -22,8 +23,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class BottomSheetCart(
-    private var availableBalance: Double
+    private var userData: UserData
 ) : BottomSheetDialogFragment() {
+
+    private var availableBalance: Double = userData.currentBalance ?: 0.0
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnClear: Button
@@ -149,11 +152,58 @@ class BottomSheetCart(
                     btnProceed.text = "Proceed"
 
                     if (response.isSuccessful) {
-                        Toast.makeText(context, "Order placed successfully!", Toast.LENGTH_SHORT).show()
-                        CartManager.clearCart()
-                        adapter.updateData(CartManager.cartItems)
-                        updateTotal()
-                        dismiss()
+                        // 1. Calculate new stats
+                        val newBalance = availableBalance - totalBill
+                        val commissionRate = userData.commissionRate?.toDouble() ?: 0.0
+                        val orderCommission = totalBill * (commissionRate / 100.0)
+                        
+                        val newTotalSales = (userData.totalSales ?: 0.0) + totalBill
+                        val newTotalCommission = (userData.totalCommission ?: 0.0) + orderCommission
+                        val newWeeklyCommission = (userData.weeklyCommission ?: 0.0) + orderCommission
+                        val newOutstandingDebt = (userData.outstandingDebt ?: 0.0) + totalBill
+                        
+                        val userId = SessionManager(requireContext()).getUserId() ?: ""
+                        android.util.Log.d("BALANCE_UPDATE", "Updating all stats for UserID: $userId. Balance: $newBalance, Sales: $newTotalSales")
+                        
+                        val updateRequest = mapOf(
+                            "current_balance" to newBalance,
+                            "total_sales" to newTotalSales,
+                            "total_commission" to newTotalCommission,
+                            "weekly_commission" to newWeeklyCommission,
+                            "outstanding_debt" to newOutstandingDebt
+                        )
+                        
+                        RetrofitClient.instance.updateProfilePut(userId, updateRequest as Map<String, @JvmSuppressWildcards Any>)
+                            .enqueue(object : Callback<UserData> {
+                                override fun onResponse(call: Call<UserData>, res: Response<UserData>) {
+                                    if (!isAdded || context == null) return
+                                    
+                                    if (res.isSuccessful) {
+                                        Toast.makeText(context, "Order placed and balance updated!", Toast.LENGTH_SHORT).show()
+                                        (activity as? MainActivity)?.fetchUserProfile() // Refresh UI balance
+                                    } else {
+                                        val errorBody = res.errorBody()?.string()
+                                        android.util.Log.e("BALANCE_UPDATE", "Failed: ${res.code()} - $errorBody")
+                                        Toast.makeText(context, "Order placed, but balance update failed: ${res.code()}", Toast.LENGTH_LONG).show()
+                                    }
+                                    
+                                    CartManager.clearCart()
+                                    adapter.updateData(CartManager.cartItems)
+                                    updateTotal()
+                                    dismiss()
+                                }
+
+                                override fun onFailure(call: Call<UserData>, t: Throwable) {
+                                    if (!isAdded || context == null) return
+                                    Toast.makeText(context, "Order placed, but balance update failed (Network).", Toast.LENGTH_SHORT).show()
+                                    
+                                    CartManager.clearCart()
+                                    adapter.updateData(CartManager.cartItems)
+                                    updateTotal()
+                                    dismiss()
+                                }
+                            })
+
                     } else {
                         val err = response.errorBody()?.string()
                         android.util.Log.e("ORDER_API", "Failed: $err")
