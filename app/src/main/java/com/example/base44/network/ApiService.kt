@@ -25,9 +25,6 @@ import retrofit2.http.Query
 
 interface ApiService {
 
-    @GET("auth/me")
-    suspend fun getUser(): Call<UserData>
-
     @POST("auth/login")
     fun login(@Body request: LoginRequest): Call<AuthResponse>
 
@@ -46,12 +43,6 @@ interface ApiService {
     @GET("entities/User/{id}")
     fun getProfile(@retrofit2.http.Path("id") id: String): Call<UserData>
 
-    @PATCH("entities/User/{id}")
-    fun updateProfile(
-        @retrofit2.http.Path("id") id: String,
-        @Body body: Map<String, @JvmSuppressWildcards Any>
-    ): Call<UserData>
-
     @PUT("entities/User/{id}")
     fun updateProfilePut(
         @retrofit2.http.Path("id") id: String,
@@ -61,21 +52,9 @@ interface ApiService {
     @POST("entities/Order")
     fun createOrderRaw(@Body orderData: Map<String, @JvmSuppressWildcards Any>): Call<Map<String, Any>>
 
-    // Payment Transactions
-    @GET("transactions")
-    suspend fun getPaymentTransactions(
-        @Query("user_email") email: String
-    ): List<PaymentTransaction>
-
-    @POST("transactions")
-    suspend fun createTransaction(
-        @Body body: CreateTransactionRequest
-    ): PaymentTransaction
-
     @POST("https://app.base44.com/fileupload")
     fun uploadFileBubble(@Body body: com.example.base44.dataClass.FileRequest): Call<okhttp3.ResponseBody>
 
-    // Entity Creation
     @POST("entities/PaymentTransaction")
     fun createPaymentTransaction(
         @Body body: PaymentTransaction

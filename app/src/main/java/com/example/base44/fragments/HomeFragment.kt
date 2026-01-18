@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -19,11 +20,11 @@ import com.example.base44.repository.ProductsRepository
 import com.example.base44.viewmodels.ProductsViewModel
 import com.example.base44.viewmodels.ProductsViewModelFactory
 
-
 class HomeFragment : Fragment() {
 
     private lateinit var rvProducts: RecyclerView
     private lateinit var productAdapter: ProductAdapter
+    private lateinit var progressBar: ProgressBar
 
     // ViewModel setup
     private val viewModel: ProductsViewModel by viewModels {
@@ -53,10 +54,13 @@ class HomeFragment : Fragment() {
 
     private fun initViews(view: View) {
         rvProducts = view.findViewById(R.id.rvProducts)
+        progressBar = view.findViewById(R.id.progressBar)
     }
 
     private fun setupRecyclerView() {
         rvProducts.layoutManager = GridLayoutManager(requireContext(), 2)
+        rvProducts.setHasFixedSize(true) // Optimizes layout for large lists
+
         productAdapter = ProductAdapter(
             products = mutableListOf(),
             onAddToCartClicked = { product ->
@@ -72,25 +76,24 @@ class HomeFragment : Fragment() {
 
     private fun observeViewModel() {
 
+        // Observe Product List
         viewModel.productList.observe(viewLifecycleOwner, Observer { list ->
-            if (list != null) {
-                productAdapter.updateList(list)
+            list?.let {
+                // Use DiffUtil inside ProductAdapter for smooth updates
+                productAdapter.updateList(it)
             }
         })
 
         // Observe Loading State
         viewModel.loading.observe(viewLifecycleOwner, Observer { isLoading ->
-            val progressBar = requireView().findViewById<android.widget.ProgressBar>(R.id.progressBar)
-            val rvProducts = requireView().findViewById<RecyclerView>(R.id.rvProducts)
-            
-            progressBar?.visibility = if (isLoading) View.VISIBLE else View.GONE
-            rvProducts?.visibility = if (isLoading) View.GONE else View.VISIBLE
+            progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            rvProducts.visibility = if (isLoading) View.GONE else View.VISIBLE
         })
 
         // Observe Error
         viewModel.error.observe(viewLifecycleOwner, Observer { message ->
-            if (!message.isNullOrEmpty()) {
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+            message?.let {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
             }
         })
     }

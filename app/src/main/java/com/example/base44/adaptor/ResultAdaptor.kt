@@ -4,27 +4,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.R
 import com.example.base44.dataClass.ResultItem
 
-class ResultAdapter(
-    private var results: List<ResultItem> = emptyList()
-) : RecyclerView.Adapter<ResultAdapter.ResultViewHolder>() {
+class ResultAdapter :
+    ListAdapter<ResultItem, ResultAdapter.ResultViewHolder>(ResultDiffCallback()) {
 
     inner class ResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
         private val title: TextView = itemView.findViewById(R.id.result_ItemHeading)
         private val date: TextView = itemView.findViewById(R.id.date_resultItem)
 
-        // 1st Prize
         private val firstPrizeNumber: TextView = itemView.findViewById(R.id.result_1stPrize_number)
-
-        // 2nd & 3rd
         private val secondPrize: TextView = itemView.findViewById(R.id.result_2nd_number)
         private val thirdPrize: TextView = itemView.findViewById(R.id.result_3nd_number)
 
-        // Special numbers (10)
         private val specialIds = listOf(
             R.id.special_nmbr_1, R.id.special_nmbr_2, R.id.special_nmbr_3,
             R.id.special_nmbr_4, R.id.special_nmbr_5, R.id.special_nmbr_6,
@@ -32,7 +28,6 @@ class ResultAdapter(
             R.id.special_nmbr_10
         )
 
-        // Consolation numbers (10)
         private val consolationIds = listOf(
             R.id.consolation_number_1, R.id.consolation_number_2,
             R.id.consolation_number_3, R.id.consolation_number_4,
@@ -51,12 +46,10 @@ class ResultAdapter(
             secondPrize.text = item.secondPrize
             thirdPrize.text = item.thirdPrize
 
-            // Fill SPECIAL numbers
             item.specialNumbers.forEachIndexed { index, number ->
                 if (index < specialViews.size) specialViews[index].text = number
             }
 
-            // Fill CONSOLATION numbers
             item.consolationNumbers.forEachIndexed { index, number ->
                 if (index < consolationViews.size) consolationViews[index].text = number
             }
@@ -69,15 +62,21 @@ class ResultAdapter(
         return ResultViewHolder(view)
     }
 
-    override fun getItemCount(): Int = results.size
-
     override fun onBindViewHolder(holder: ResultViewHolder, position: Int) {
-        holder.bind(results[position])
+        holder.bind(getItem(position))
     }
 
-    // ✅ Professional: Update data function
     fun updateData(newList: List<ResultItem>) {
-        results = newList
-        notifyDataSetChanged()
+        submitList(newList)
+    }
+}
+
+class ResultDiffCallback : DiffUtil.ItemCallback<ResultItem>() {
+    override fun areItemsTheSame(oldItem: ResultItem, newItem: ResultItem): Boolean {
+        return oldItem.date == newItem.date && oldItem.title == newItem.title
+    }
+
+    override fun areContentsTheSame(oldItem: ResultItem, newItem: ResultItem): Boolean {
+        return oldItem == newItem
     }
 }

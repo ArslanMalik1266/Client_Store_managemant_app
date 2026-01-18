@@ -1,11 +1,12 @@
 package com.example.base44.adaptor
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -13,9 +14,8 @@ import com.example.base44.R
 import com.example.base44.dataClass.OrderItem
 
 class OrdersAdapter(
-    private var orderList: List<OrderItem>,
     private val onItemClick: ((position: Int) -> Unit)? = null
-) : RecyclerView.Adapter<OrdersAdapter.OrderViewHolder>() {
+) : ListAdapter<OrderItem, OrdersAdapter.OrderViewHolder>(OrderDiffCallback()) {
 
     inner class OrderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val invoiceTv: TextView = itemView.findViewById(R.id.inv_number_tv)
@@ -34,6 +34,26 @@ class OrdersAdapter(
                 onItemClick?.invoke(adapterPosition)
             }
         }
+
+        fun bind(item: OrderItem) {
+            invoiceTv.text = item.invoiceNumber
+            statusTv.text = item.status
+            dateTv.text = item.dateAdded
+            raceDayTv.text = "Race day: ${item.raceDay}"
+            productName.text = item.productName
+            productCode.text = item.productCode
+            totalLabel.text = item.totalLabel
+            totalAmount.text = item.totalAmount
+
+            Glide.with(itemView.context)
+                .load(item.productImage)
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .error(R.drawable.ic_launcher_foreground)
+                .into(productImage)
+
+            rvRows.layoutManager = LinearLayoutManager(itemView.context)
+            rvRows.adapter = TagAdapter(item.rows ?: emptyList())
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -43,31 +63,14 @@ class OrdersAdapter(
     }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
-        val item = orderList[position]
-
-        holder.invoiceTv.text = item.invoiceNumber
-        holder.statusTv.text = item.status
-        holder.dateTv.text = item.dateAdded
-        holder.raceDayTv.text = "Race day: ${item.raceDay}"
-        Glide.with(holder.itemView.context)
-            .load(item.productImage)
-            .placeholder(R.drawable.ic_launcher_foreground)
-            .error(R.drawable.ic_launcher_foreground)
-            .into(holder.productImage)
-
-        holder.productName.text = item.productName
-        holder.productCode.text = item.productCode
-        holder.totalLabel.text = item.totalLabel
-        holder.totalAmount.text = item.totalAmount
-
-        holder.rvRows.layoutManager = LinearLayoutManager(holder.itemView.context)
-        holder.rvRows.adapter = TagAdapter(item.rows ?: emptyList())
+        holder.bind(getItem(position))
     }
 
-    override fun getItemCount(): Int = orderList.size
+    class OrderDiffCallback : DiffUtil.ItemCallback<OrderItem>() {
+        override fun areItemsTheSame(oldItem: OrderItem, newItem: OrderItem) =
+            oldItem.invoiceNumber == newItem.invoiceNumber
 
-    fun updateData(newList: List<OrderItem>) {
-        this.orderList = newList
-        notifyDataSetChanged()
+        override fun areContentsTheSame(oldItem: OrderItem, newItem: OrderItem) =
+            oldItem == newItem
     }
 }

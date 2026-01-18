@@ -58,6 +58,7 @@ class DrawViewModel(private val repo: DrawRepository) : ViewModel() {
 fun List<DrawResult>.toResultItemList(): List<ResultItem> {
     return this.map { draw ->
         ResultItem(
+            id = draw.id.toString(),
             title = draw.productName ?: "N/A",
             date = draw.drawDate ?: "",
             firstPrize = draw.firstPrize ?: "----",

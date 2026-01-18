@@ -4,14 +4,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.base44.R
 import com.example.base44.dataClass.SimpleOrderItem
 
+// ✅ Using ListAdapter + DiffUtil for smooth updates with large data
 class SimpleOrdersAdapter(
-    private var orderList: List<SimpleOrderItem>,
     private val onItemClick: ((position: Int) -> Unit)? = null
-) : RecyclerView.Adapter<SimpleOrdersAdapter.OrderViewHolder>() {
+) : ListAdapter<SimpleOrderItem, SimpleOrdersAdapter.OrderViewHolder>(DiffCallback()) {
 
     inner class OrderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val invoiceTv: TextView = itemView.findViewById(R.id.inv_number_tv)
@@ -24,6 +26,13 @@ class SimpleOrdersAdapter(
                 onItemClick?.invoke(adapterPosition)
             }
         }
+
+        fun bind(item: SimpleOrderItem) {
+            invoiceTv.text = item.invoiceNumber
+            dateTv.text = item.dateAdded
+            totalAmountTv.text = item.totalAmount
+            statusTv.text = item.status
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -33,17 +42,20 @@ class SimpleOrdersAdapter(
     }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
-        val item = orderList[position]
-        holder.invoiceTv.text = item.invoiceNumber
-        holder.dateTv.text = item.dateAdded
-        holder.totalAmountTv.text = item.totalAmount
-        holder.statusTv.text = item.status
+        holder.bind(getItem(position))
     }
 
-    override fun getItemCount(): Int = orderList.size
-
     fun updateData(newList: List<SimpleOrderItem>) {
-        orderList = newList
-        notifyDataSetChanged()
+        submitList(newList)
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<SimpleOrderItem>() {
+        override fun areItemsTheSame(oldItem: SimpleOrderItem, newItem: SimpleOrderItem): Boolean {
+            return oldItem.invoiceNumber == newItem.invoiceNumber // unique identifier
+        }
+
+        override fun areContentsTheSame(oldItem: SimpleOrderItem, newItem: SimpleOrderItem): Boolean {
+            return oldItem == newItem
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.example.base44.fragments
 
 import CheckResultsDialogFragment
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,7 +30,7 @@ class ordersFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: OrdersAdapter
-    private val orders = mutableListOf<OrderItem>()
+    private var allOrders = listOf<OrderItem>()
 
     private lateinit var tvOrdersCount: TextView
     private lateinit var tvTotalSalesAmount: TextView
@@ -53,56 +52,43 @@ class ordersFragment : Fragment() {
 
         setupToolbar(view)
 
-        // RecyclerView
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = OrdersAdapter(orders)
+        adapter = OrdersAdapter()
         recyclerView.adapter = adapter
 
-        // ViewModel setup using Factory
-        val repo = OrderRepository(RetrofitClient.api)
-        val factory = OrderViewModelFactory(repo)
-        viewModel = ViewModelProvider(this, factory)[OrderViewModel::class.java]
-
-        // Observe loading state
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            view.findViewById<android.widget.ProgressBar>(R.id.progressBar)?.visibility =
-                if (isLoading) View.VISIBLE else View.GONE
-            
-            view.findViewById<androidx.core.widget.NestedScrollView>(R.id.contentScrollView)?.visibility =
-                if (isLoading) View.GONE else View.VISIBLE
-        }
-
-        viewModel.orders.observe(viewLifecycleOwner) { orderList ->
-            orders.clear()
-            orders.addAll(orderList)
-            filterOrders()
-        }
-
-        viewModel.loadOrders()
-
-        // Stats
         tvOrdersCount = view.findViewById(R.id.tvOrdersCount)
         tvTotalSalesAmount = view.findViewById(R.id.tvTotalSalesAmount)
         totalOrdersTv = view.findViewById(R.id.totalOrdersTv)
 
         setupChips(view)
 
-        // Default
+        val repo = OrderRepository(RetrofitClient.api)
+        val factory = OrderViewModelFactory(repo)
+        viewModel = ViewModelProvider(this, factory)[OrderViewModel::class.java]
+
+        observeViewModel()
+
+        viewModel.loadOrders()
+
         chipAll.isChecked = true
 
         return view
     }
 
-    override fun onResume() {
-        super.onResume()
-        hideToolbarAndDrawer()
-    }
+    private fun observeViewModel() {
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            view?.findViewById<android.widget.ProgressBar>(R.id.progressBar)?.visibility =
+                if (isLoading) View.VISIBLE else View.GONE
 
-    private fun hideToolbarAndDrawer() {
-        val activity = activity as? MainActivity ?: return
-        activity.toolbar.visibility = View.GONE
-        activity.enableDrawer(false)
+            view?.findViewById<androidx.core.widget.NestedScrollView>(R.id.contentScrollView)?.visibility =
+                if (isLoading) View.GONE else View.VISIBLE
+        }
+
+        viewModel.orders.observe(viewLifecycleOwner) { orderList ->
+            allOrders = orderList.sortedByDescending { it.timestamp }
+            filterOrders()
+        }
     }
 
     private fun setupToolbar(view: View) {
@@ -112,7 +98,6 @@ class ordersFragment : Fragment() {
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, HomeFragment())
                 .commit()
-
             requireActivity()
                 .findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation)
                 .selectedItemId = R.id.nav_home
@@ -134,40 +119,44 @@ class ordersFragment : Fragment() {
         chipWinner = view.findViewById(R.id.chipWinner)
         chipGroupFilter = view.findViewById(R.id.chipGroupFilter)
 
-        chipGroupFilter.setOnCheckedChangeListener { group, checkedId ->
+        chipGroupFilter.setOnCheckedChangeListener { _, _ ->
             filterOrders()
         }
     }
 
     private fun filterOrders() {
         val filtered = when {
-            chipToday.isChecked -> orders.filter { it.isToday() }
-            chipYesterday.isChecked -> orders.filter { it.isYesterday() }
-            chipThisWeek.isChecked -> orders.filter { it.isThisWeek() }
-            chipWinner.isChecked -> orders.filter { it.isWinner() }
-            chipAll.isChecked -> orders
-            else -> orders
+            chipToday.isChecked -> allOrders.filter { it.isToday() }
+            chipYesterday.isChecked -> allOrders.filter { it.isYesterday() }
+            chipThisWeek.isChecked -> allOrders.filter { it.isThisWeek() }
+            chipWinner.isChecked -> allOrders.filter { it.isWinner() }
+            chipAll.isChecked -> allOrders
+            else -> allOrders
         }
-
-        val sorted = filtered.sortedByDescending { it.timestamp }
-
-        adapter.updateData(sorted)
-        updateStats(sorted)
+        adapter.submitList(filtered) // ListAdapter handles smooth updates automatically
+        updateStats(filtered)
     }
 
     private fun updateStats(orderList: List<OrderItem>) {
         tvOrdersCount.text = orderList.size.toString()
-        totalOrdersTv.text = "Total Check Orders = ${orders.size}"
+        totalOrdersTv.text = "Total Check Orders = ${allOrders.size}"
 
         val total = orderList.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
         tvTotalSalesAmount.text = "RM %.2f".format(total)
 
-        // Winning Stats logic
-        val winningOrders = orders.filter { it.isWinner() }
+        val winningOrders = allOrders.filter { it.isWinner() }
         val winningTotal = winningOrders.sumOf { it.totalAmount.toDoubleOrNull() ?: 0.0 }
-        
+
         view?.findViewById<TextView>(R.id.tvWinningAmount)?.text = "RM %.2f".format(winningTotal)
-        view?.findViewById<TextView>(R.id.tvWinningStats)?.text = "Winning Orders = ${winningOrders.size} "
+        view?.findViewById<TextView>(R.id.tvWinningStats)?.text = "Winning Orders = ${winningOrders.size}"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.apply {
+            toolbar.visibility = View.GONE
+            enableDrawer(false)
+        }
     }
 
     fun generateFinalInvoice(): String = "INV-${System.currentTimeMillis()}"

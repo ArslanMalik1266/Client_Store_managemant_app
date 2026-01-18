@@ -10,13 +10,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.base44.MainActivity
 import com.example.base44.R
+import com.example.base44.viewmodels.AuthViewModel
+import com.example.base44.viewmodels.AuthViewModelFactory
+import com.example.base44.repository.AuthRepository
 import com.example.base44.adaptor.utils.SessionManager
-import com.example.base44.dataClass.api.AuthResponse
-import com.example.base44.dataClass.api.LoginRequest
 import com.example.base44.network.RetrofitClient
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.lifecycle.ViewModelProvider
 
 class login : AppCompatActivity() {
 
@@ -26,22 +25,29 @@ class login : AppCompatActivity() {
     private lateinit var btnGoogleLogin: LinearLayout
     private lateinit var tvSignup: TextView
     private lateinit var session: SessionManager
+    private lateinit var viewModel: AuthViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-
         session = SessionManager(this)
-
-        // Check if already logged in
+        
         if (session.isLoggedIn()) {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
             return
         }
 
+        initViewModel()
         initViews()
         setupListeners()
+        observeViewModel()
+    }
+
+    private fun initViewModel() {
+        val repo = AuthRepository()
+        val factory = AuthViewModelFactory(repo)
+        viewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
     }
 
     private fun initViews() {
@@ -54,11 +60,40 @@ class login : AppCompatActivity() {
 
     private fun setupListeners() {
         btnLogin.setOnClickListener { attemptLogin() }
-        
         tvSignup.setOnClickListener {
             startActivity(Intent(this, SignUp::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
             finish()
+        }
+    }
+
+    private fun observeViewModel() {
+        viewModel.loginResult.observe(this) { body ->
+            btnLogin.isEnabled = true
+            val actualToken = body?.getActualToken()
+
+            android.util.Log.d("LOGIN_DEBUG", "Login Success! User: ${body?.user?.email}")
+
+            session.saveLogin(
+                role = body?.user?.role ?: "user",
+                token = actualToken,
+                username = body?.user?.fullName,
+                email = body?.user?.email,
+                userId = body?.user?.id
+            )
+
+            actualToken?.let { RetrofitClient.setAuthToken(it) }
+            
+            startActivity(Intent(this@login, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
+            finish()
+        }
+
+        viewModel.error.observe(this) { errorMsg ->
+            btnLogin.isEnabled = true
+            errorMsg?.let {
+                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -72,47 +107,6 @@ class login : AppCompatActivity() {
         }
 
         btnLogin.isEnabled = false
-
-        val request = LoginRequest(email, password)
-        RetrofitClient.instance.login(request).enqueue(object : Callback<AuthResponse> {
-            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
-                btnLogin.isEnabled = true
-
-                if (response.isSuccessful && (response.body()?.status == "success" || response.code() == 200)) {
-                    val body = response.body()
-                    val actualToken = body?.getActualToken()
-
-                    session.saveLogin(
-                        role = body?.user?.role ?: "user",
-                        token = actualToken,
-                        username = body?.user?.fullName,
-                        email = body?.user?.email,
-                        userId = body?.user?.id
-                    )
-                    
-                    // Set token for API calls
-                    actualToken?.let { RetrofitClient.setAuthToken(it) }
-                    android.util.Log.d("LOGIN_DEBUG", "Token saved and set: ${actualToken?.take(20)}...")
-
-                    Toast.makeText(this@login, "Login successful", Toast.LENGTH_SHORT).show()
-
-                    startActivity(Intent(this@login, MainActivity::class.java)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
-                    finish()
-                } else {
-                    val body = response.body()
-                    val status = body?.status ?: "null"
-                    val message = body?.message ?: "No message"
-
-                    Toast.makeText(this@login, "Login failed: $message", Toast.LENGTH_LONG).show()
-                    android.util.Log.e("LOGIN_DEBUG", "Login failed - Code: ${response.code()}, Status: $status, Msg: $message")
-                }
-            }
-
-            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
-                btnLogin.isEnabled = true
-                Toast.makeText(this@login, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
+        viewModel.login(email, password)
     }
 }

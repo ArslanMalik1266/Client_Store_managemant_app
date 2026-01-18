@@ -3,11 +3,9 @@ package com.example.base44.auth
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.example.base44.MainActivity
 import com.example.base44.R
 import com.example.base44.adaptor.utils.SessionManager
 import com.example.base44.dataClass.api.*
@@ -31,20 +29,14 @@ class SignUp : AppCompatActivity() {
         setContentView(R.layout.activity_sign_up)
 
         session = SessionManager(this)
-        initViews()
-        setupListeners()
-    }
 
-    private fun initViews() {
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
         etConfirmPassword = findViewById(R.id.etConfirmPassword)
         etUsername = findViewById(R.id.etUserName)
         btnSignup = findViewById(R.id.btnSignup)
         tvLoginIn = findViewById(R.id.tvLoginIn)
-    }
 
-    private fun setupListeners() {
         btnSignup.setOnClickListener { attemptSignup() }
         tvLoginIn.setOnClickListener {
             startActivity(Intent(this, login::class.java))
@@ -58,50 +50,38 @@ class SignUp : AppCompatActivity() {
         val password = etPassword.text.toString().trim()
         val confirmPassword = etConfirmPassword.text.toString().trim()
 
-        // Validation
-        when {
-            email.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() -> {
-                Toast.makeText(this, "All fields required", Toast.LENGTH_SHORT).show()
-                return
-            }
-            password != confirmPassword -> {
-                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                return
-            }
+        if (email.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+            Toast.makeText(this, "All fields required", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (password != confirmPassword) {
+            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
+            return
         }
 
         btnSignup.isEnabled = false
-        
-        // Call API
         val request = RegisterRequest(username, email, password)
+
         RetrofitClient.instance.register(request).enqueue(object : Callback<AuthResponse> {
             override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
                 btnSignup.isEnabled = true
-                
-                if (response.isSuccessful && response.body()?.status == "success") {
-                    Toast.makeText(this@SignUp, "Account created! Verify your email.", Toast.LENGTH_SHORT).show()
-                    showOTPDialog(email, response.body()?.token, username)
+                val body = response.body()
+
+                if (response.isSuccessful && (body?.status == "success" || response.code() in 200..201)) {
+                    Toast.makeText(this@SignUp, "Verify your email.", Toast.LENGTH_SHORT).show()
+                    showOTPDialog(email, body?.token, username)
+                }
+                else if (body?.message?.contains("already exists") == true) {
+                    Toast.makeText(this@SignUp, "User exists! Enter OTP sent to email.", Toast.LENGTH_SHORT).show()
+                    showOTPDialog(email, null, username)
                 } else {
-                    // Account might exist, try resend
-                    resendAndShowDialog(email, username)
+                    Toast.makeText(this@SignUp, body?.message ?: "Registration failed", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
                 btnSignup.isEnabled = true
                 Toast.makeText(this@SignUp, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    private fun resendAndShowDialog(email: String, username: String) {
-        RetrofitClient.instance.resendOtp(ResendOtpRequest(email)).enqueue(object : Callback<AuthResponse> {
-            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
-                Toast.makeText(this@SignUp, "Code sent to email", Toast.LENGTH_SHORT).show()
-                showOTPDialog(email, null, username)
-            }
-            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
-                Toast.makeText(this@SignUp, "Failed to send code", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -126,47 +106,55 @@ class SignUp : AppCompatActivity() {
             verifyOTP(email, code, token, username, dialog, progress, btnVerify)
         }
 
-        tvResend.setOnClickListener { resendAndShowDialog(email, username) }
+        tvResend.setOnClickListener {
+            resendOTP(email)
+        }
+
         dialog.show()
     }
 
-    private fun verifyOTP(email: String, code: String, token: String?, username: String, 
-                         dialog: AlertDialog, progress: ProgressBar, btnVerify: Button) {
+    private fun resendOTP(email: String) {
+        RetrofitClient.instance.resendOtp(ResendOtpRequest(email)).enqueue(object : Callback<AuthResponse> {
+            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
+                Toast.makeText(this@SignUp, "Code resent to email", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                Toast.makeText(this@SignUp, "Failed to resend code", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun verifyOTP(email: String, code: String, token: String?, username: String,
+                          dialog: AlertDialog, progress: ProgressBar, btnVerify: Button) {
         btnVerify.isEnabled = false
-        progress.visibility = View.VISIBLE
+        progress.visibility = android.view.View.VISIBLE
 
         RetrofitClient.instance.verifyEmail(VerifyRequest(email, code))
             .enqueue(object : Callback<AuthResponse> {
                 override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
-                    progress.visibility = View.GONE
+                    progress.visibility = android.view.View.GONE
                     btnVerify.isEnabled = true
 
-                    if (response.isSuccessful && response.body()?.status == "success") {
-                        val body = response.body()
-                        session.saveLogin(
-                            role = body?.user?.role ?: "user",
-                            token = body?.token ?: token,
-                            username = body?.user?.fullName ?: username,
-                            email = email
-                        )
-                        
-                        Toast.makeText(this@SignUp, "Success!", Toast.LENGTH_SHORT).show()
-                        dialog.dismiss()
-                        
-                        startActivity(Intent(this@SignUp, MainActivity::class.java)
+                    val body = response.body()
+                    if (response.isSuccessful && (body?.status == "success" || response.code() == 200)) {
+                        Toast.makeText(this@SignUp, "Verified! Please login.", Toast.LENGTH_SHORT).show()
+                        if (dialog.isShowing) dialog.dismiss()
+
+                        startActivity(Intent(this@SignUp, login::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
                         finish()
                     } else {
-                        // Show actual error from API
-                        val errorMsg = response.body()?.message 
-                            ?: response.errorBody()?.string() 
-                            ?: "Verification failed"
-                        Toast.makeText(this@SignUp, errorMsg, Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@SignUp,
+                            body?.message ?: response.errorBody()?.string() ?: "Verification failed",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
 
                 override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
-                    progress.visibility = View.GONE
+                    progress.visibility = android.view.View.GONE
                     btnVerify.isEnabled = true
                     Toast.makeText(this@SignUp, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                 }

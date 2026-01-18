@@ -1,6 +1,7 @@
 package com.example.base44.fragments
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,17 +36,18 @@ class resultFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val view = inflater.inflate(R.layout.fragment_result, container, false)
         setupToolbar(view)
 
         recyclerView = view.findViewById(R.id.recyclerResults)
         recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
-        
+        recyclerView.setHasFixedSize(true) // ✅ improves performance for large data
+
         val progressBar = view.findViewById<android.widget.ProgressBar>(R.id.progressBar)
 
         // Adapter initialized with empty list
-        adapter = ResultAdapter(emptyList())
+        adapter = ResultAdapter()
         recyclerView.adapter = adapter
 
         // ViewModel
@@ -62,7 +64,7 @@ class resultFragment : Fragment() {
 
         // Observe results
         viewModel.results.observe(viewLifecycleOwner) { results ->
-            adapter.updateData(results)
+            adapter.updateData(results) // ✅ DiffUtil in adapter will handle smooth updates
         }
 
         // Observe errors
@@ -74,7 +76,7 @@ class resultFragment : Fragment() {
 
         // Observe available dates for filtering
         viewModel.availableDates.observe(viewLifecycleOwner) {
-            // Do nothing here, used in popup dynamically
+            // used dynamically for filter popup
         }
 
         viewModel.loadResults()
@@ -114,7 +116,7 @@ class resultFragment : Fragment() {
     }
 
     private fun showFilterPopup(anchorView: View) {
-        val popup = PopupMenu(requireContext(), anchorView, android.view.Gravity.END)
+        val popup = PopupMenu(requireContext(), anchorView, Gravity.END)
 
         // Always add "All"
         popup.menu.add(0, 0, 0, "All")
@@ -129,7 +131,7 @@ class resultFragment : Fragment() {
             val selectedFilter = item.title.toString()
             Toast.makeText(requireContext(), "Filter: $selectedFilter", Toast.LENGTH_SHORT).show()
 
-            // Apply filter to results
+            // Apply filter
             val filteredResults = if (selectedFilter == "All") {
                 viewModel.results.value
             } else {

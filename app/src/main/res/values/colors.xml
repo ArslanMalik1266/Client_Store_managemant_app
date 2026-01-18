@@ -2,15 +2,26 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="green">#249567</color>
-    <color name="off_white">#F5F6FA</color>
-    <color name="grey">#F2F2F2</color>
-    <color name="strokeGrey">#E5E5E5</color>
-    <color name="light_green">#CDF6E6</color>
-    <color name="light_blue">#DBEBFE</color>
-    <color name="blue">#4D7ADF</color>
+    
+    <!-- Custom Project Colors -->
     <color name="golden">#F59E0B</color>
+    <color name="off_white">#F9F9F9</color>
+    
+    <color name="light_green">#CDF6E6</color>
+    <color name="green">#249567</color>
+    <color name="red">#F44336</color>
+    
+    <!-- Greys -->
+    <color name="grey">#F2F2F2</color>
     <color name="darkGrey">#334155</color>
     <color name="lightGrey">#E2E8F0</color>
+    <color name="strokeGrey">#E5E5E5</color>
+    <color name="light_gray">#D3D3D3</color>
+
+    <!-- Blues -->
+    <color name="blue">#4D7ADF</color>
+    <color name="light_blue">#DBEBFE</color>
+    
+    <!-- Purples -->
     <color name="purple">#8D2EE2</color>
 </resources>

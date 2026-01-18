@@ -73,7 +73,7 @@ class OrderViewModel(private val repo: OrderRepository) : ViewModel() {
                             )
                         }
 
-                        _orders.value = finalList
+                        _orders.value = finalList.sortedByDescending { it.timestamp }
 
                         Log.d("ORDER_DEBUG", "FINAL ORDERITEM LIST = ${Gson().toJson(finalList)}")
                     }

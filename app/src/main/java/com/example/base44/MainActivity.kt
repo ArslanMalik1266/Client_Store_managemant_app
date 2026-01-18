@@ -49,11 +49,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         session = SessionManager(this)
-        
+
         session.getToken()?.let { token ->
             RetrofitClient.setAuthToken(token)
         }
@@ -76,11 +77,14 @@ class MainActivity : AppCompatActivity() {
         if (userId.isNullOrEmpty()) return
 
         RetrofitClient.instance.getProfile(userId).enqueue(object : retrofit2.Callback<UserData> {
-            override fun onResponse(call: retrofit2.Call<UserData>, response: retrofit2.Response<UserData>) {
+            override fun onResponse(
+                call: retrofit2.Call<UserData>,
+                response: retrofit2.Response<UserData>
+            ) {
                 if (response.isSuccessful && response.body() != null) {
                     val user = response.body()!!
                     currentUser = user
-                    
+
                     // Update UI
                     val headerView = navView.getHeaderView(0)
                     val tvDrawerUsername = headerView.findViewById<TextView>(R.id.tvUsername)
@@ -115,8 +119,8 @@ class MainActivity : AppCompatActivity() {
 
         val username = session.getUsername() ?: "User"
         tvDrawerUsername.text = username
-        
-        userAvailableBalance = 0.0     
+
+        userAvailableBalance = 0.0
     }
 
     private fun setupToolbar() {
@@ -126,7 +130,8 @@ class MainActivity : AppCompatActivity() {
                     BottomSheetCart(user)
                         .show(supportFragmentManager, "CartBottomSheet")
                 } ?: run {
-                    Toast.makeText(this, "User profile loading... please wait", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "User profile loading... please wait", Toast.LENGTH_SHORT)
+                        .show()
                     fetchUserProfile()
                 }
                 true
